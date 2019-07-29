@@ -1,2 +1,2 @@
 # IdentityManager.PoSh
-A pwoershell library using the One Identity Manager ReST API
+A Powershell library using the One Identity Manager ReST API
