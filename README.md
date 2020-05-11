@@ -127,6 +127,7 @@ To limit the number of returned entities, you can specify a value for the Parame
 
 ### Getting  attributes of an object
 After loading an object it first contains the primary keys and attributes relevant for display. 
+
     #Additional attributes can be loaded using GetValue
     $p1 = Get-Person -Identity 'a5a169ab-eac3-4292-9b05-20eeba990379'
     $p1.GetValue('Lastname').Value
