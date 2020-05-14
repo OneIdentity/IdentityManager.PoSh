@@ -8,8 +8,7 @@ function Get-IdentityManagerSessionToUse {
   Begin {
   }
 
-  Process
-  {
+  Process {
     # Determine Session to use
     $sessionToUse = $null
     if($null -eq $Session) {

@@ -39,11 +39,14 @@
 function global:New-$Prefix$funcName() {
   Param (
 "@
+
+      $cols = new-object string[] 0
       ForEach ($column in $tableProperty.Columns) {
         if (-not $column.Enabled) {
           # Skip deactivated columns
           Continue
         }
+        $cols += "'" + $column.ColumnName + "',"
         $paramName = $column.ColumnName
         $dateType = [VI.Base.DbVal]::GetType($column.Type).Name
         $mandatory = $column.MinLen -gt 0 -and (-not ($column.IsPK -and $column.IsUid) -or $tableProperty.IsMNTable)
@@ -74,25 +77,22 @@ function global:New-$Prefix$funcName() {
         $funcTemplateHeader = $funcTemplateHeader + $columnTemplate
       }
       $funcTemplateHeader = $funcTemplateHeader.Substring(0, $funcTemplateHeader.Length - 1) + ')'
+      $cols[$cols.Length -1 ] = $cols[$cols.Length - 1].Substring(0, $cols[$cols.Length - 1].Length - 1)
 
       $funcTemplateFooter = @"
 `r`n
   Process {
     `$session = `$Global:imsessions['$Prefix'].Session
-    `$src = [VI.DB.Entities.SessionExtensions]::Source(`$session)
-    `$entity = `$src.CreateNewAsync('$funcName', [VI.DB.Entities.EntityParameters]::new(), `$noneToken).GetAwaiter().GetResult()
+    `$cols = @($cols)
 
+    `$properties = @{}
     ForEach (`$boundParam in `$PSBoundParameters.GetEnumerator()) {
-      `$k = `$boundParam.Key
-      `$v = `$boundParam.Value
-      (`$Entity).PutValueAsync(`$k, `$v, `$noneToken).GetAwaiter().GetResult() | Out-Null
+      if ((`$cols -contains `$boundParam.Key)) {
+        `$properties.Add(`$boundParam.Key, `$boundParam.Value)
+      }
     }
 
-    `$uow = New-UnitOfWork -Session `$session
-    Add-UnitOfWorkEntity -UnitOfWork `$uow -Entity `$entity
-    Save-UnitOfWork -UnitOfWork `$uow
-
-  return `$entity
+    New-Entity -Session `$session -Type '$funcName' -Properties `$properties
   }
 }
 "@

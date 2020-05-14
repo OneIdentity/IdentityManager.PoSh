@@ -46,11 +46,13 @@ function global:Get-$Prefix$funcName() {
     [string] `$FilterClause = '',
 "@
 
+      $cols = new-object string[] 0
       ForEach ($column in $tableProperty.Columns) {
         if (-not $column.Enabled) {
           # Skip deactivated columns
           Continue
         }
+        $cols += "'" + $column.ColumnName + "',"
         $paramName = $column.ColumnName
         $dateType = [VI.Base.DbVal]::GetType($column.Type).Name
 
@@ -69,56 +71,46 @@ function global:Get-$Prefix$funcName() {
         $funcTemplateHeader = $funcTemplateHeader + $columnTemplate
       }
       $funcTemplateHeader = $funcTemplateHeader.Substring(0, $funcTemplateHeader.Length - 1) + ')'
+      $cols[$cols.Length -1 ] = $cols[$cols.Length - 1].Substring(0, $cols[$cols.Length - 1].Length - 1)
 
       $funcTemplateFooter = @"
 `r`n
   Process {
     `$session = `$Global:imsessions['$Prefix'].Session
-    `$src = [VI.DB.Entities.SessionExtensions]::Source(`$session)
-    `$entity = `$null
     `$hadBoundParameters = `$false
+    `$cols = @($cols)
 
     ForEach (`$boundParam in `$PSBoundParameters.GetEnumerator()) {
-      # Filter special parameters
-      if (('FilterClause' -eq `$boundParam.Key) -Or ('ResultSize' -eq `$boundParam.Key)) {
+      # Skip parameter if it is not a column
+      if ((`$cols -notcontains `$boundParam.Key)) {
         Continue
       }
+
       `$FilterClause = `$FilterClause + "{0} = '{1}' and " -f `$boundParam.Key, `$boundParam.Value
       `$hadBoundParameters = `$true
-    }
-
-    if (-not [String]::IsNullOrEmpty(`$Identity)) {
-      # Load Object by UID or XObjectKey
-      if (`$Identity -like '<Key><T>*</T><P>*</P></Key>') {
-        `$objectKey = [VI.DB.DbObjectKey]::new(`$Identity)
-
-        if (-not (`$objectKey.Tablename -eq '$funcName')) {
-          throw "The provided XObjectKey `$Identity is not valid for objects of type '$funcName'."
-        }
-
-        # Load with XObjectKey
-        `$entity = [VI.DB.EntitySourceExtensions]::GetAsync(`$src, `$objectKey, [VI.DB.Entities.EntityLoadType]::Interactive, `$noneToken).GetAwaiter().GetResult()
-      } else {
-        # Load with UID
-        `$entity = [VI.DB.EntitySourceExtensions]::GetAsync(`$src, '$funcName', `$Identity, [VI.DB.Entities.EntityLoadType]::Interactive, `$noneToken).GetAwaiter().GetResult()
-      }
-
-      return `$entity
     }
 
     if (-not [String]::IsNullOrEmpty(`$FilterClause) -And `$hadBoundParameters) {
       `$FilterClause = `$FilterClause.Substring(0, `$FilterClause.Length - 5)
     }
 
-    # Query entity collection
-    `$query = [VI.DB.Entities.Query]::From('$funcName').Where(`$FilterClause).Take(`$ResultSize).SelectAll()
-    `$entityCollection = `$src.GetCollectionAsync(`$query, [VI.DB.Entities.EntityCollectionLoadType]::Slim, `$noneToken).GetAwaiter().GetResult()
+    if (-not [String]::IsNullOrEmpty(`$Identity)) {
+      # if the identity is an objectkey, check it belongs to the table this function is associated with.
+      if (`$Identity -like '<Key><T>*</T><P>*</P></Key>') {
+        `$objectKey = [VI.DB.DbObjectKey]::new(`$Identity)
 
-    # Return each entity
-    foreach (`$entity in `$entityCollection) {
-      [VI.DB.Entities.Entity]::ReloadAsync(`$entity, `$session, [VI.DB.Entities.EntityLoadType]::Interactive, `$noneToken).GetAwaiter().GetResult()
+        if (-not (`$objectKey.Tablename -eq '$funcName')) {
+          throw "The provided XObjectKey `$Identity is not valid for objects of type '$funcName'."
+        }
+      }
+
+      # Load the object by identity parameter
+      Get-Entity -Session `$session -Type '$funcName' -Identity `$Identity -ResultSize `$ResultSize
     }
-
+    else {
+      # Load objects by filter
+      Get-Entity -Session `$session -Type '$funcName' -Filter `$FilterClause -ResultSize `$ResultSize
+    }
   }
 }
 "@

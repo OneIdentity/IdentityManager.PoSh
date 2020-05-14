@@ -40,16 +40,20 @@ function global:Set-$Prefix$funcName() {
   Param (
     [parameter(Mandatory = `$false, ValueFromPipeline=`$true, HelpMessage = 'Entity to interact with')]
     [VI.DB.Entities.IEntity] `$Entity = `$null,
+    [parameter(Mandatory = `$false, HelpMessage = 'Load object by UID or XObjectKey')]
+    [string] `$Identity,
 "@
 
+      $cols = new-object string[] 0
       ForEach ($column in $tableProperty.Columns) {
         if (-not $column.Enabled) {
           # Skip deactivated columns
           Continue
         }
+        $cols += "'" + $column.ColumnName + "',"
         $paramName = $column.ColumnName
 
-        if ($column.IsUid) {
+        if ($column.IsUid -or $column.IsDynamicFK) {
           $dateType = "Object"
         } else {
           $dateType = [VI.Base.DbVal]::GetType($column.Type).Name
@@ -70,34 +74,33 @@ function global:Set-$Prefix$funcName() {
         $funcTemplateHeader = $funcTemplateHeader + $columnTemplate
       }
       $funcTemplateHeader = $funcTemplateHeader.Substring(0, $funcTemplateHeader.Length - 1) + ')'
+      $cols[$cols.Length -1 ] = $cols[$cols.Length - 1].Substring(0, $cols[$cols.Length - 1].Length - 1)
 
       $funcTemplateFooter = @"
 `r`n
   Process {
     `$session = `$Global:imsessions['$Prefix'].Session
+    `$cols = @($cols)
 
-    ForEach (`$boundParam in `$PSBoundParameters.GetEnumerator()) {
-      # Filter special parameters
-      if ('Entity' -eq `$boundParam.Key) {
-        Continue
-      }
-      `$k = `$boundParam.Key
-      `$v = `$boundParam.Value
+    if (-not [String]::IsNullOrEmpty(`$Identity) -and `$null -eq `$Entity) {
+      # if the identity is an objectkey, check it belongs to the table this function is associated with.
+      if (`$Identity -like '<Key><T>*</T><P>*</P></Key>') {
+        `$objectKey = [VI.DB.DbObjectKey]::new(`$Identity)
 
-      `$metaData = [VI.DB.Entities.SessionExtensions]::MetaData(`$session)
-      `$t = `$metaData.GetTableAsync(`$Entity.Tablename, `$noneToken).GetAwaiter().GetResult()
-      if ((`$v.GetType()).Name -eq 'InteractiveProxyEntity' -And (`$t.Columns |Where-Object { `$_.ColumnName -eq `$k }).IsUID) {
-        (`$Entity).PutValueAsync(`$k, `$v.GetValue((`$v.Table.Columns |Where-Object { `$_.IsPK}).ColumnName).Value, `$noneToken).GetAwaiter().GetResult() | Out-Null
-      } else {
-        (`$Entity).PutValueAsync(`$k, `$v, `$noneToken).GetAwaiter().GetResult() | Out-Null
+        if (-not (`$objectKey.Tablename -eq '$funcName')) {
+          throw "The provided XObjectKey `$Identity is not valid for objects of type '$funcName'."
+        }
       }
     }
 
-    `$uow = New-UnitOfWork -Session `$session
-    Add-UnitOfWorkEntity -UnitOfWork `$uow -Entity `$Entity
-    Save-UnitOfWork -UnitOfWork `$uow
+    `$properties = @{}
+    ForEach (`$boundParam in `$PSBoundParameters.GetEnumerator()) {
+      if ((`$cols -contains `$boundParam.Key)) {
+        `$properties.Add(`$boundParam.Key, `$boundParam.Value)
+      }
+    }
 
-    return `$Entity
+    Set-Entity -Session `$session -Entity `$Entity -Type '$funcName' -Identity `$Identity -Properties `$properties
   }
 }
 "@

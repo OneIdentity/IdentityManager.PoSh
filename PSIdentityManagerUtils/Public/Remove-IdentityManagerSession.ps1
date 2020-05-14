@@ -3,15 +3,14 @@ function Remove-IdentityManagerSession {
   Param (
     [Parameter(Mandatory = $false, HelpMessage = 'Prefix specified while creating the connection')]
     [String] $Prefix = '',
-    [Parameter(Mandatory = $false, HelpMessage = 'Session to remove')]
+    [Parameter(Mandatory = $false, ValueFromPipeline=$true, HelpMessage = 'Session to remove')]
     [VI.DB.Entities.ISession] $Session = $null
   )
 
   Begin {
   }
 
-  Process
-  {
+  Process {
     $foundPrefix = $null
     $entry = $null
 
@@ -23,15 +22,12 @@ function Remove-IdentityManagerSession {
       $entry = $Global:imsessions[$Prefix]
     }
 
-    if ($null -ne $entry)
-    {
-      if ($null -ne $entry.Session)
-      {
+    if ($null -ne $entry) {
+      if ($null -ne $entry.Session) {
         $entry.Session.Dispose()
       }
 
-      if ($null -ne $entry.Factory)
-      {
+      if ($null -ne $entry.Factory) {
         $entry.Factory.Dispose()
       }
 

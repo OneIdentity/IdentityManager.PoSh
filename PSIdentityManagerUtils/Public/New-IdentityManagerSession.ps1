@@ -22,8 +22,7 @@ function New-IdentityManagerSession {
   Begin {
   }
 
-  Process
-  {
+  Process {
     # Check if there is already a session in global session store with this prefix
     if ($Global:imsessions.Contains($Prefix)) {
       throw "There is already a connection with prefix '$Prefix' defined. Please specify another prefix."
@@ -43,11 +42,13 @@ function New-IdentityManagerSession {
 
     # Generate type wrapped functions if SkipFunctionGeneration switch is not specified
     if (-not $SkipFunctionGeneration) {
-        New-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-        Get-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-        Remove-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-        Set-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
+      New-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
+      Get-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
+      Remove-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
+      Set-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
     }
+
+    return $session
   }
 
   End {

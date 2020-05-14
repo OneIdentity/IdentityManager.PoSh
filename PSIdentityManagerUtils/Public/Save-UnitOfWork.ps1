@@ -9,8 +9,7 @@
   Begin {
   }
 
-  Process
-  {
+  Process {
     ($UnitOfWork).CommitAsync($noneToken).GetAwaiter().GetResult() | Out-Null
     $UnitOfWork.Dispose()
   }

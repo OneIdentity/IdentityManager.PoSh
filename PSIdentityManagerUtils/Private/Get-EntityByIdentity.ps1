@@ -3,11 +3,11 @@ function Get-EntityByIdentity {
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]
     [VI.DB.Entities.ISession] $Session = $null,
-    [parameter(Mandatory = $true, HelpMessage = 'The tablename of the object to load')]
-    [ValidateNotNullOrEmpty()]
+    [parameter(Mandatory = $false, HelpMessage = 'Internal')]
+    [VI.DB.Entities.IEntity] $Entity = $null,
+    [parameter(Mandatory = $false, HelpMessage = 'The tablename of the object to load')]
     [string] $Type,
-    [ValidateNotNullOrEmpty()]
-    [parameter(Mandatory = $true, HelpMessage = 'Load object by UID or XObjectKey')]
+    [parameter(Mandatory = $false, HelpMessage = 'Load object by UID or XObjectKey')]
     [string] $Identity
   )
 
@@ -19,22 +19,36 @@ function Get-EntityByIdentity {
     }
   }
 
-  Process
-  {
+  Process {
     $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
 
-    # Load Object by UID or XObjectKey
-    if ($Identity -like '<Key><T>*</T><P>*</P></Key>') {
-      # Load with XObjectKey
-      $objectKey = New-Object -TypeName 'VI.DB.DbObjectKey' -ArgumentList $Identity
-      $entity = [VI.DB.EntitySourceExtensions]::GetAsync($src, $objectKey, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
-    } else {
-      # Load with UID
-      $entity = [VI.DB.EntitySourceExtensions]::GetAsync($src, $Type, $Identity, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
+    # Convenience: If user already specified an entity then use it
+    if ($null -eq $Entity) {
+      # If there is no entity check identity  is not null
+      if ([System.String]::IsNullOrEmpty($Identity)) {
+        Throw 'Identity parameter must be specified when loading an object.'
+      }
+
+      # Load Object by UID or XObjectKey
+      if ($Identity -like '<Key><T>*</T><P>*</P></Key>') {
+        # Load with XObjectKey
+        $objectKey = New-Object -TypeName 'VI.DB.DbObjectKey' -ArgumentList $Identity
+        $Entity = [VI.DB.EntitySourceExtensions]::GetAsync($src, $objectKey, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
+      } else {
+        # Check if type was specified and is not null
+        if ([System.String]::IsNullOrEmpty($Type)) {
+          Throw 'Type parameter must be specified when loading an object via UID.'
+        }
+
+        # Load with UID
+        $Entity = [VI.DB.EntitySourceExtensions]::GetAsync($src, $Type, $Identity, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
+      }
     }
 
+    $Entity = Add-EntityMemberExtensions -Entity $Entity
+
     # Return the loaded entity
-    return $entity
+    return $Entity
   }
 
   End {

@@ -3,12 +3,12 @@ function Set-Entity {
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]
     [VI.DB.Entities.ISession] $Session = $null,
-    [parameter(Mandatory = $true, HelpMessage = 'The tablename of the object to modify')]
-    [ValidateNotNullOrEmpty()]
+    [parameter(Mandatory = $false, ValueFromPipeline=$true, HelpMessage = 'Entity to interact with')]
+    [VI.DB.Entities.IEntity] $Entity = $null,
+    [parameter(Mandatory = $false, HelpMessage = 'The tablename of the object to modify')]
     [string] $Type,
-    [parameter(Mandatory = $true, HelpMessage = 'Load object by UID or XObjectKey')]
-    [ValidateNotNullOrEmpty()]
-    [string] $Identity = '',
+    [parameter(Mandatory = $false, HelpMessage = 'Load object by UID or XObjectKey')]
+    [string] $Identity,
     [parameter(Mandatory = $false, HelpMessage = 'The entity properties')]
     [Hashtable] $Properties = @{},
     [parameter(Mandatory = $false, HelpMessage = 'If the unsaved switch is specified the entity will not be automatically saved to the database. Intended for bulk operations.')]
@@ -23,24 +23,23 @@ function Set-Entity {
     }
   }
 
-  Process
-  {
+  Process {
     # Load Object by Identity
-    $entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity
+    $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
 
     # Set Property Values
     foreach($property in $Properties.Keys) {
-      Set-EntityColumnValue -Entity $entity -Column $property -Value $Properties[$property]
+      Set-EntityColumnValue -Entity $Entity -Column $property -Value $Properties[$property]
     }
 
     # Save Entity via UnitOfWork to Database
     if(-Not $Unsaved) {
       $uow = New-UnitOfWork -Session $sessionToUse
-      Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $entity
+      Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $Entity
       Save-UnitOfWork -UnitOfWork $uow
     }
 
-    return $entity
+    return $Entity
   }
 
   End {

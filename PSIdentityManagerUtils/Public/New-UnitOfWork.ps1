@@ -13,8 +13,7 @@
     }
   }
 
-  Process
-  {
+  Process {
     # Create new UnitOfWork instance
     $unitOfWork = ($sessionToUse).StartUnitOfWork([String][System.Guid]::NewGuid())
     return $unitOfWork

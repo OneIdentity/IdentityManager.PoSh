@@ -21,14 +21,11 @@ function Get-Entity {
     }
   }
 
-  Process
-  {
+  Process {
     $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
 
     if (-not [String]::IsNullOrEmpty($Identity)) {
-
-      if (-not ([String]::IsNullOrEmpty($Type)))
-      {
+      if (-not ([String]::IsNullOrEmpty($Type))) {
         return Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity
       } else {
         $tableName = ''
@@ -49,7 +46,8 @@ function Get-Entity {
 
       # Return each entity
       foreach ($entity in $entityCollection) {
-        [VI.DB.Entities.Entity]::ReloadAsync($entity, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
+        $reloadedEntity = [VI.DB.Entities.Entity]::ReloadAsync($entity, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
+        Add-EntityMemberExtensions -Entity $reloadedEntity
       }
 
       # Write warning if there are probably more objects in database

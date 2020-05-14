@@ -12,8 +12,7 @@
   Begin {
   }
 
-  Process
-  {
+  Process {
     ($UnitOfWork).PutAsync($Entity, [VI.DB.Entities.PutOptions]::new(), $noneToken).GetAwaiter().GetResult() | Out-Null
   }
 

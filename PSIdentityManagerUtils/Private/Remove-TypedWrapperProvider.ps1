@@ -51,42 +51,19 @@ function global:Remove-$Prefix$funcName() {
 `r`n
   Process {
     `$session = `$Global:imsessions['$Prefix'].Session
-    `$src = [VI.DB.Entities.SessionExtensions]::Source(`$session)
 
-    if (-not [String]::IsNullOrEmpty(`$Identity) -And `$null -eq `$Entity) {
-      # Load Object by UID or XObjectKey
+    if (-not [String]::IsNullOrEmpty(`$Identity) -and `$null -eq `$Entity) {
+      # if the identity is an objectkey, check it belongs to the table this function is associated with.
       if (`$Identity -like '<Key><T>*</T><P>*</P></Key>') {
         `$objectKey = [VI.DB.DbObjectKey]::new(`$Identity)
 
         if (-not (`$objectKey.Tablename -eq '$funcName')) {
           throw "The provided XObjectKey `$Identity is not valid for objects of type '$funcName'."
         }
-
-        # Load with XObjectKey
-        `$Entity = [VI.DB.EntitySourceExtensions]::GetAsync(`$src, `$objectKey, [VI.DB.Entities.EntityLoadType]::Interactive, `$noneToken).GetAwaiter().GetResult()
-      } else {
-        # Load with UID
-        `$Entity = [VI.DB.EntitySourceExtensions]::GetAsync(`$src, '$funcName', `$Identity, [VI.DB.Entities.EntityLoadType]::Interactive, `$noneToken).GetAwaiter().GetResult()
       }
     }
 
-    if (`$null -eq `$Entity) {
-      Throw 'Neither an -Identity nor an -Entity was specified.'
-    }
-
-    # Mark entity for removal
-    if (`$IgnoreDeleteDelay) {
-      `$Entity.MarkForDeletionWithoutDelay()
-    }
-    else {
-      `$Entity.MarkForDeletion()
-    }
-
-    `$uow = New-UnitOfWork -Session `$session
-    Add-UnitOfWorkEntity -UnitOfWork `$uow -Entity `$Entity
-    Save-UnitOfWork -UnitOfWork `$uow
-
-    return `$Entity
+    Remove-Entity -Session `$session -Entity `$Entity -Type '$funcName' -Identity `$Identity -IgnoreDeleteDelay:`$IgnoreDeleteDelay
   }
 }
 "@

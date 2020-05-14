@@ -12,8 +12,7 @@ function Get-EntityColumnValue {
   Begin {
   }
 
-  Process
-  {
+  Process {
     ($Entity).GetValue($Column).Value
   }
 
