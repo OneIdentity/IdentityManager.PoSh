@@ -32,7 +32,7 @@
         PSData = @{
             Tags = @('IdentityManager')
 
-            ProjectUri = 'https://git.vi.lan/andrer/identitymanagerutils'
+            ProjectUri = 'https://github.com/OneIdentity/IdentityManager.PoSh'
         }
     }
 
