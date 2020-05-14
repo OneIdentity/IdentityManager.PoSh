@@ -2,9 +2,6 @@
 
 # IdentityManager.PoSh
 A Powershell library for One Identity Manager
-# IdentityManagerUtils
-
-Powershell module to interact with the Identity Manager starting from version 8.0
 
 ## Requirements
 
@@ -32,6 +29,10 @@ The Identity Manager product DLLs
     * VI.Base.dll
     * VI.DB.dll
 
+⚠ Hint
+
+It is recommended to using the Application Server connection! 
+
 ## Basic usage
 
 ### Importing the module
@@ -45,7 +46,7 @@ After the module is imported a first connection (session) can be established. As
 ❗ Warning
 
 The function generation for wrapper functions ("New-", "Get-", "Set-" and "Remove-") will be skipped for every disabled table / object type. If an object may have disabled columns, these columns either won't be added as possible parameters.
-It may happen that errors occur during the function generation ```Function ... cannot be created because function capacity 4096 has been exceeded for this scope.```. This is a limitation by Powershell. You can workaround this error by skipping the function generation for specific modules by using the parameter ```-ModulesToSkip``` during the call of ```New-IdentityManagerSession```.
+It may happen that errors occur during the function generation ```Function ... cannot be created because function capacity 4096 has been exceeded for this scope.```. This is a limitation by Powershell. You can workaround this error by skipping the function generation for specific modules by using the parameter ```-ModulesToSkip``` during the call of ```New-IdentityManagerSession```. An alternative for that is overwriting the limitation for the maximum function capacity by setting a new value like ```$MaximumFunctionCount = 10000``` just before you import the PSIdentityManagerUtils module.
 
 #### Direct database connection
 
@@ -62,11 +63,23 @@ It may happen that errors occur during the function generation ```Function ... c
 
 ⚠ Hint
 
-You can also provide some extra arguments to the connection string do deal with special certificate requirements:
+To deal with special certificate requirements you can provide some extra arguments to the connection string:
 
     $connectionString = 'url=https://<URL>/AppServer/;AcceptSelfSigned=true;AllowServerNameMismatch=true'
 
+As an example to skip wrapper function generation for certain tables / objects use:
+
+    New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -FactoryName $factory -ModulesToSkip 'EBS','CSM','UCI','AAD'
+
 ### Creating an entity
+
+#### Generic option of creating an entity
+
+To create a new entity in a generic way use:
+
+    $person = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Fritz'; 'LastName' = 'Fuchs' }
+
+#### Typed wrapper function for creation of an entity
 
 Next, a first object can be created. In this example we are going to create a person entry by using one of the pre generated wrapper functions.
 
@@ -125,13 +138,6 @@ Also the retrieving of several entities is possible:
 
 To limit the number of returned entities, you can specify a value for the Parameter ```-ResultSize```. The default value is 1.000 records.
 
-### Getting  attributes of an object
-After loading an object it first contains the primary keys and attributes relevant for display. 
-
-    #Additional attributes can be loaded using GetValue
-    $p1 = Get-Person -Identity 'a5a169ab-eac3-4292-9b05-20eeba990379'
-    $p1.GetValue('Lastname').Value
-
 ### Modifying an entity
 
 #### Generic option of modifying an entity
@@ -159,6 +165,19 @@ Foreign keys can be handled either by the string representation of the primary k
     $p1 = Get-Person -CentralAccount 'marada'
     Get-Department -DepartmentName 'D1' |Set-Department -UID_PersonHead $p1
 
+#### Direct modification of entity values
+
+It's even possible to modify a loaded entity directly. In then following sample a person entity is loaded, the lastname as well as then direct department assignment is changed:
+
+    # Load person with last name Lustig
+    $p1 = Get-Person -Lastname 'Lustig'
+    # Modify the last name of that loaded person
+    $p1.Lastname = 'Lustiger'
+    # Load Accouting department
+    Get-Department -FilterClause "DepartmentName = 'Accounting'"
+    # Set Accounting department
+    $p1.UID_Department = $d1
+
 ### Removing an entity
 
 #### Generic option of removing an entity
@@ -174,6 +193,44 @@ Objects can be removed by there corresponding ```Remove-``` function. You have t
     Remove-Person -Identity '4307b156-3c48-4153-b0de-89e79bba06ee'
     Remove-Person -Identity '<Key><T>Person</T><P>1b3441fa-c2d3-4a18-9fc2-40d364039234</P></Key>'
     Get-Entity -Type 'Person' -Filter "Lastname = 'Lustig'" |Remove-Person -IgnoreDeleteDelay
+
+### Dealing with events
+
+Both methods support pipelining for entities.
+
+#### Show possible events for an entity
+
+To get a list of possible events to trigger for an specific entity use:
+
+    Get-Event -Entity $p1
+
+#### Trigger an event for an entity
+
+After you know the name for the event to trigger, you can fire it like:
+
+    Invoke-Event -Entity $p1 -EventName "CHECK_EXITDATE"
+
+It's also possible to pass certain event parameters if needed. Use ```EventParameters``` as hash table for that.
+
+### Dealing with methods
+
+The identity manager supports object as well as customizer methods. The following functions support the handling of entities withhin pipelines.
+
+#### Show possible methods for an entity
+
+    Get-Method -Entity $p1
+
+#### Run methods for an entity
+
+    Invoke-EntityMethod  -Entity $p1
+
+It's also possible to pass certain method parameters if needed. Use ```Parameters``` for that.
+
+### Executing scripts within Identity Manager
+
+The Identity Manager allows you to execute scripts.
+
+    Invoke-IdentityManagerScript -Name 'QBM_GetTempPath'
 
 ### Closing the connection
 
