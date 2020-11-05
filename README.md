@@ -202,13 +202,13 @@ Both methods support pipelining for entities.
 
 To get a list of possible events to trigger for a specific entity use:
 
-    Get-Event -Entity $p1
+    Get-ImEvent -Entity $p1
 
 #### Trigger an event for an entity
 
 After you know the name for the event to trigger, you can fire it like:
 
-    Invoke-Event -Entity $p1 -EventName "CHECK_EXITDATE"
+    Invoke-ImEvent -Entity $p1 -EventName "CHECK_EXITDATE"
 
 It's possible to pass certain event parameters if needed. Use ```EventParameters``` as hash table for that.
 
@@ -247,3 +247,9 @@ The Identity Manager powershell utils allows you to deal with multiple database 
     New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -Prefix db1
 
 With that, the automatically generated functions will get there prefix as well. E.g.: ```New-Person``` will become ```New-db1Person```.
+
+## Contributing
+
+### Run Pester tests
+
+Tests can be started by the command: ```Invoke-Pester -Output Detailed```

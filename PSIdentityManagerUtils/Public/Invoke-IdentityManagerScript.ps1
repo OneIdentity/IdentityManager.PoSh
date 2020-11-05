@@ -30,8 +30,8 @@
 
       # register events
       $registeredEvents = New-Object System.Collections.ArrayList
-      $registeredEvents.Add((Register-ObjectEvent -InputObject $scriptRunner.Data -EventName "Message" -Action { Write-Host $EventArgs.Text })) | Out-Null
-      $registeredEvents.Add((Register-ObjectEvent -InputObject $scriptRunner.Data -EventName "Progress" -Action { Write-Host $EventArgs.Text })) | Out-Null
+      $registeredEvents.Add((Register-ObjectEvent -InputObject $scriptRunner.Data -EventName "Message" -Action { Write-Output $EventArgs.Text })) | Out-Null
+      $registeredEvents.Add((Register-ObjectEvent -InputObject $scriptRunner.Data -EventName "Progress" -Action { Write-Output $EventArgs.Text })) | Out-Null
 
       $result = $null
       try {

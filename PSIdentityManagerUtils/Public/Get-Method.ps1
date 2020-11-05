@@ -30,15 +30,15 @@
 
       $objectMethods = [VI.DB.Entities.Entity]::GetEntityMethodsAsync($Entity, $sessionToUse, $null, $noneToken).GetAwaiter().GetResult()
 
-      Write-Host 'Object methods'
+      Write-Output 'Object methods'
       ForEach ($om in $objectMethods) {
-        Write-Host "`t" $om.Caption.Original
+        Write-Output "`t" $om.Caption.Original
       }
 
       $customizerMethods = [VI.DB.Entities.Entity]::GetMethodsAsync($Entity, $sessionToUse, $noneToken).GetAwaiter().GetResult()
-      Write-Host 'Customizer methods'
+      Write-Output 'Customizer methods'
       ForEach ($cm in $customizerMethods) {
-        Write-Host "`t" $cm.Key
+        Write-Output "`t" $cm.Key
       }
     } catch {
       Resolve-Exception -ExceptionObject $PSitem

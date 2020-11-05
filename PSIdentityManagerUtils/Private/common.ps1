@@ -26,6 +26,7 @@ Write-Warning "Using '$oneImBasePath' as base path for loading needed Identity M
 
 # just for convenience to save typing
 $noneToken = [System.Threading.CancellationToken]::None
+$noneToken | Out-Null
 
 # initialize global variables
 $Global:imsessions = @{}
