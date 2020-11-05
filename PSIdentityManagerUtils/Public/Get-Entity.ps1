@@ -53,7 +53,7 @@ function Get-Entity {
         # Return each entity
         foreach ($entity in $entityCollection) {
           $reloadedEntity = [VI.DB.Entities.Entity]::ReloadAsync($entity, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
-          Add-EntityMemberExtensions -Entity $reloadedEntity
+          Add-EntityMemberExtension -Entity $reloadedEntity
         }
 
         # Write warning if there are probably more objects in database

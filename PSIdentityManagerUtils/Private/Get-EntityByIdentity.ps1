@@ -50,7 +50,7 @@ function Get-EntityByIdentity {
         }
       }
 
-      $Entity = Add-EntityMemberExtensions -Entity $Entity
+      $Entity = Add-EntityMemberExtension -Entity $Entity
 
       # Return the loaded entity
       return $Entity

@@ -1,4 +1,4 @@
-﻿function Add-EntityMemberExtensions {
+﻿function Add-EntityMemberExtension {
   [CmdletBinding()]
   Param (
     [parameter(Mandatory = $false, ValueFromPipeline=$true, HelpMessage = 'The entity to extend')]
