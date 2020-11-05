@@ -14,47 +14,57 @@ function Get-Entity {
   )
 
   Begin {
-    # Determine Session to use
-    $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
-    if($null -eq $sessionToUse) {
-      throw [System.ArgumentNullException] 'Session'
+    try {
+      # Determine session to use
+      $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
+      if ($null -eq $sessionToUse) {
+        throw [System.ArgumentNullException] 'Session'
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 
   Process {
+    try {
+
     $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
 
-    if (-not [String]::IsNullOrEmpty($Identity)) {
-      if (-not ([String]::IsNullOrEmpty($Type))) {
-        return Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity
-      } else {
-        $tableName = ''
-        # Try to figure out if we have an XObjectKey
-        try {
-          $tableName = ([VI.DB.DbObjectKey]::new($Identity)).Tablename
-        } catch {
-          throw [System.ArgumentException] "Could not create a valid XObjectKey from '$Identity'."
+      if (-not [String]::IsNullOrEmpty($Identity)) {
+        if (-not ([String]::IsNullOrEmpty($Type))) {
+          return Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity
+        } else {
+          $tableName = ''
+          # Try to figure out if we have an XObjectKey
+          try {
+            $tableName = ([VI.DB.DbObjectKey]::new($Identity)).Tablename
+          } catch {
+            throw [System.ArgumentException] "Could not create a valid XObjectKey from '$Identity'."
+          }
+
+          return Get-EntityByIdentity -Session $sessionToUse -Type $tableName -Identity $Identity
         }
 
-        return Get-EntityByIdentity -Session $sessionToUse -Type $tableName -Identity $Identity
-      }
+      } else {
+        # Query entity collection
+        $query = [VI.DB.Entities.Query]::From($Type).Where($Filter).Take($ResultSize).SelectAll()
+        $entityCollection = $src.GetCollectionAsync($query, [VI.DB.Entities.EntityCollectionLoadType]::Slim, $noneToken).GetAwaiter().GetResult()
 
-    } else {
-      # Query entity collection
-      $query = [VI.DB.Entities.Query]::From($Type).Where($Filter).Take($ResultSize).SelectAll()
-      $entityCollection = $src.GetCollectionAsync($query, [VI.DB.Entities.EntityCollectionLoadType]::Slim, $noneToken).GetAwaiter().GetResult()
+        # Return each entity
+        foreach ($entity in $entityCollection) {
+          $reloadedEntity = [VI.DB.Entities.Entity]::ReloadAsync($entity, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
+          Add-EntityMemberExtensions -Entity $reloadedEntity
+        }
 
-      # Return each entity
-      foreach ($entity in $entityCollection) {
-        $reloadedEntity = [VI.DB.Entities.Entity]::ReloadAsync($entity, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
-        Add-EntityMemberExtensions -Entity $reloadedEntity
+        # Write warning if there are probably more objects in database
+        if ($entityCollection.Count -eq $ResultSize) {
+          Write-Warning -Message "There are probably more objects in the database, but the result was limited to $ResultSize entries. To set the limit specify the -ResultSize parameter."
+        }
       }
-
-      # Write warning if there are probably more objects in database
-      if ($entityCollection.Count -eq $ResultSize) {
-        Write-Warning -Message "There are probably more objects in the database, but the result was limited to $ResultSize entries. To set the limit specify the -ResultSize parameter."
-      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
+
   }
 
   End {

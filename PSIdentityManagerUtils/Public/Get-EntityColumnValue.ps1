@@ -13,7 +13,11 @@ function Get-EntityColumnValue {
   }
 
   Process {
-    ($Entity).GetValue($Column).Value
+    try {
+      ($Entity).GetValue($Column).Value
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
+    }
   }
 
   End {

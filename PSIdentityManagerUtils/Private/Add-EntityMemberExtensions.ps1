@@ -9,23 +9,29 @@
   }
 
   Process {
-    if ($null -ne $Entity) {
-      ForEach ($column in $Entity.Columns) {
-        $columnName = $column.Columnname
-        # Check if there is already a member with that name.
-        if ($null -ne $Entity.PSObject.Members[$columnName]) {
-          continue
-        }
+    try {
 
-        # Add column as custom property to the entity
-        # We have to generate the scripts as string so the column name gets in the string as value instead of a variable.
-        Add-Member -InputObject $Entity -MemberType ScriptProperty -Name $columnName `
-          -Value (&([Scriptblock]::Create("{Get-EntityColumnValue -Entity `$this -Column '$columnName'}"))) `
-          -SecondValue (&([Scriptblock]::Create("{param(`$value) Set-EntityColumnValue -Entity `$this -Column '$columnName' -Value `$value -WithSave}")))
+      if ($null -ne $Entity) {
+        ForEach ($column in $Entity.Columns) {
+          $columnName = $column.Columnname
+          # Check if there is already a member with that name.
+          if ($null -ne $Entity.PSObject.Members[$columnName]) {
+            continue
+          }
+
+          # Add column as custom property to the entity
+          # We have to generate the scripts as string so the column name gets in the string as value instead of a variable.
+          Add-Member -InputObject $Entity -MemberType ScriptProperty -Name $columnName `
+            -Value (&([Scriptblock]::Create("{Get-EntityColumnValue -Entity `$this -Column '$columnName'}"))) `
+            -SecondValue (&([Scriptblock]::Create("{param(`$value) Set-EntityColumnValue -Entity `$this -Column '$columnName' -Value `$value -WithSave}")))
+        }
       }
+
+      return $Entity
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
 
-    return $Entity
   }
 
   End {

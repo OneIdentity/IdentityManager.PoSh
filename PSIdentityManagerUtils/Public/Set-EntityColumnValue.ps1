@@ -17,44 +17,52 @@ function Set-EntityColumnValue {
   )
 
   Begin {
-    # Determine Session to use
-    $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
-    if($null -eq $sessionToUse) {
-      throw [System.ArgumentNullException] 'Session'
+    try {
+      # Determine session to use
+      $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
+      if ($null -eq $sessionToUse) {
+        throw [System.ArgumentNullException] 'Session'
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 
   Process
   {
-    $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($sessionToUse)
-    $tableMetaData = $metaData.GetTableAsync($Entity.Tablename, $noneToken).GetAwaiter().GetResult()
+    try {
+      $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($sessionToUse)
+      $tableMetaData = $metaData.GetTableAsync($Entity.Tablename, $noneToken).GetAwaiter().GetResult()
 
-    $valueToSet = $Value
+      $valueToSet = $Value
 
-    # If value is an entity and column is UID
-    if ($null -ne $Value -and $Value -is [VI.DB.Entities.IEntity] `
-      -and $tableMetaData.Columns.IsAvailable($Column) `
-      -and ($tableMetaData.Columns | Where-Object { $_.ColumnName -eq $Column }).IsUID)
-    {
-      $otherTableMetaData = $metaData.GetTableAsync($Value.Tablename, $noneToken).GetAwaiter().GetResult()
-      $otherPrimaryKeyColumn = ($otherTableMetaData.Columns | Where-Object { $_.IsPK}).ColumnName
-      $valueToSet = Get-EntityColumnValue -Entity $Value -Column $otherPrimaryKeyColumn
-    }
+      # If value is an entity and column is UID
+      if ($null -ne $Value -and $Value -is [VI.DB.Entities.IEntity] `
+        -and $tableMetaData.Columns.IsAvailable($Column) `
+        -and ($tableMetaData.Columns | Where-Object { $_.ColumnName -eq $Column }).IsUID)
+      {
+        $otherTableMetaData = $metaData.GetTableAsync($Value.Tablename, $noneToken).GetAwaiter().GetResult()
+        $otherPrimaryKeyColumn = ($otherTableMetaData.Columns | Where-Object { $_.IsPK}).ColumnName
+        $valueToSet = Get-EntityColumnValue -Entity $Value -Column $otherPrimaryKeyColumn
+      }
 
-    # If value is an entity and column is dynamic FK
-    if ($null -ne $Value -and $Value -is [VI.DB.Entities.IEntity] `
-      -and $tableMetaData.Columns.IsAvailable($Column) `
-      -and ($tableMetaData.Columns | Where-Object { $_.ColumnName -eq $Column }).IsDynamicFK)
-    {
-      $valueToSet = Get-EntityColumnValue -Entity $Value -Column 'XObjectKey'
-    }
+      # If value is an entity and column is dynamic FK
+      if ($null -ne $Value -and $Value -is [VI.DB.Entities.IEntity] `
+        -and $tableMetaData.Columns.IsAvailable($Column) `
+        -and ($tableMetaData.Columns | Where-Object { $_.ColumnName -eq $Column }).IsDynamicFK)
+      {
+        $valueToSet = Get-EntityColumnValue -Entity $Value -Column 'XObjectKey'
+      }
 
-    ($Entity).PutValueAsync($Column, $valueToSet, $noneToken).GetAwaiter().GetResult() | Out-Null
+      ($Entity).PutValueAsync($Column, $valueToSet, $noneToken).GetAwaiter().GetResult() | Out-Null
 
-    if ($WithSave) {
-      $uow = New-UnitOfWork -Session $sessionToUse
-      Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $Entity
-      Save-UnitOfWork -UnitOfWork $uow
+      if ($WithSave) {
+        $uow = New-UnitOfWork -Session $sessionToUse
+        Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $Entity
+        Save-UnitOfWork -UnitOfWork $uow
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 
