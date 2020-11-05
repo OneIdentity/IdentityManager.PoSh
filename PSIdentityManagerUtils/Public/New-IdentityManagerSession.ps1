@@ -14,7 +14,6 @@ function New-IdentityManagerSession {
     [String] $Prefix = '',
     [Parameter(Mandatory = $false, HelpMessage = 'List of modules to skip for function generation')]
     [String[]] $ModulesToSkip,
-     #AAD','CSM','UCI','EBS'),
     [Parameter(Mandatory = $false, HelpMessage = 'If the switch is specified the type wrapper functions will not be created (e.g. New-Person, New-ADSAccount)')]
     [switch] $SkipFunctionGeneration = $false
   )
