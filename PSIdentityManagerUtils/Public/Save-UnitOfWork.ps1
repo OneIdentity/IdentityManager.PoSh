@@ -10,8 +10,12 @@
   }
 
   Process {
-    ($UnitOfWork).CommitAsync($noneToken).GetAwaiter().GetResult() | Out-Null
-    $UnitOfWork.Dispose()
+    try {
+      ($UnitOfWork).CommitAsync($noneToken).GetAwaiter().GetResult() | Out-Null
+      $UnitOfWork.Dispose()
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
+    }
   }
 
   End {

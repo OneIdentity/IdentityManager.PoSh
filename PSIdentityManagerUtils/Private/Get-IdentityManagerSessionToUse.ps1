@@ -9,17 +9,21 @@ function Get-IdentityManagerSessionToUse {
   }
 
   Process {
-    # Determine Session to use
-    $sessionToUse = $null
-    if($null -eq $Session) {
-      if ($Global:imsessions.Count -eq 1) {
-        $sessionToUse = $Global:imsessions[$Global:imsessions.Keys[0]].Session
+    try {
+      # Determine session to use
+      $sessionToUse = $null
+      if ($null -eq $Session) {
+        if ($Global:imsessions.Count -eq 1) {
+          $sessionToUse = $Global:imsessions[$Global:imsessions.Keys[0]].Session
+        }
+      } else {
+        $sessionToUse = $Session
       }
-    } else {
-      $sessionToUse = $Session
-    }
 
-    return $sessionToUse
+      return $sessionToUse
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
+    }
   }
 
   End {

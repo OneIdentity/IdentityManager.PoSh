@@ -23,32 +23,38 @@ function New-IdentityManagerSession {
   }
 
   Process {
-    # Check if there is already a session in global session store with this prefix
-    if ($Global:imsessions.Contains($Prefix)) {
-      throw "There is already a connection with prefix '$Prefix' defined. Please specify another prefix."
+
+    try {
+      # Check if there is already a session in global session store with this prefix
+      if ($Global:imsessions.Contains($Prefix)) {
+        throw "There is already a connection with prefix '$Prefix' defined. Please specify another prefix."
+      }
+
+      if ($FactoryName -eq 'QBM.AppServer.Client.ServiceClientFactory') {
+        [System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, 'QBM.AppServer.Client.dll')) | Out-Null
+      }
+
+      # Create the session
+      $factory = New-Object -TypeName $FactoryName
+      $sessionfactory = [VI.DB.DbApp]::ConnectTo($ConnectionString).Using($factory).BuildSessionFactory()
+      $session = [VI.DB.Sync.SyncSessionFactoryExtensions]::Open($sessionfactory, $AuthenticationString)
+
+      # Add session to global session store
+      $Global:imsessions.Add($Prefix, @{ Factory = $sessionfactory; Session = $session })
+
+      # Generate type wrapped functions if SkipFunctionGeneration switch is not specified
+      if (-not $SkipFunctionGeneration) {
+        New-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
+        Get-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
+        Remove-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
+        Set-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
+      }
+
+      return $session
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
 
-    if ($FactoryName -eq 'QBM.AppServer.Client.ServiceClientFactory') {
-      [System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, 'QBM.AppServer.Client.dll')) | Out-Null
-    }
-
-    # Create the session
-    $factory = New-Object -TypeName $FactoryName
-    $sessionfactory = [VI.DB.DbApp]::ConnectTo($ConnectionString).Using($factory).BuildSessionFactory()
-    $session = [VI.DB.Sync.SyncSessionFactoryExtensions]::Open($sessionfactory, $AuthenticationString)
-
-    # Add session to global session store
-    $Global:imsessions.Add($Prefix, @{ Factory = $sessionfactory; Session = $session })
-
-    # Generate type wrapped functions if SkipFunctionGeneration switch is not specified
-    if (-not $SkipFunctionGeneration) {
-      New-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-      Get-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-      Remove-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-      Set-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-    }
-
-    return $session
   }
 
   End {

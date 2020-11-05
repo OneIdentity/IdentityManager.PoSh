@@ -15,27 +15,29 @@
 
   Process
   {
-    $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($Session)
-    if ($null -eq $ModulesToSkip)
-    {
-      $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated }
-    } else {
-      $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated -And (-not $ModulesToSkip.Contains($_.Uid.Substring(0, 3))) }
-    }
+    try {
 
-    $progressCount = 0
-    $totalOperationsCount = $tables.Count
-
-    ForEach ($tableProperty in $tables) {
-      $funcName = $tableProperty.TableName
-
-      # Do not update progress for every function. It takes to much time.
-      if ($progressCount % 10 -eq 0) {
-        Write-Progress -Activity 'Generating "Set-" functions' -Status "Function $progressCount of $totalOperationsCount" -CurrentOperation "Set-$Prefix$funcName" -PercentComplete ($progressCount / $totalOperationsCount * 100)
+      $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($Session)
+      if ($null -eq $ModulesToSkip)
+      {
+        $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated }
+      } else {
+        $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated -And (-not $ModulesToSkip.Contains($_.Uid.Substring(0, 3))) }
       }
-      $progressCount++
 
-      $funcTemplateHeader = @"
+      $progressCount = 0
+      $totalOperationsCount = $tables.Count
+
+      ForEach ($tableProperty in $tables) {
+        $funcName = $tableProperty.TableName
+
+        # Do not update progress for every function. It takes to much time.
+        if ($progressCount % 10 -eq 0) {
+          Write-Progress -Activity 'Generating "Set-" functions' -Status "Function $progressCount of $totalOperationsCount" -CurrentOperation "Set-$Prefix$funcName" -PercentComplete ($progressCount / $totalOperationsCount * 100)
+        }
+        $progressCount++
+
+        $funcTemplateHeader = @"
 function global:Set-$Prefix$funcName() {
   Param (
     [parameter(Mandatory = `$false, ValueFromPipeline=`$true, HelpMessage = 'Entity to interact with')]
@@ -44,80 +46,81 @@ function global:Set-$Prefix$funcName() {
     [string] `$Identity,
 "@
 
-      $cols = new-object string[] 0
-      ForEach ($column in $tableProperty.Columns) {
-        if (-not $column.Enabled) {
-          # Skip deactivated columns
-          Continue
-        }
-        $cols += "'" + $column.ColumnName + "',"
-        $paramName = $column.ColumnName
+        $cols = new-object string[] 0
+        ForEach ($column in $tableProperty.Columns) {
+          if (-not $column.Enabled) {
+            # Skip deactivated columns
+            Continue
+          }
+          $cols += "'" + $column.ColumnName + "',"
+          $paramName = $column.ColumnName
 
-        if ($column.IsUid -or $column.IsDynamicFK) {
-          $dateType = "Object"
-        } else {
-          $dateType = [VI.Base.DbVal]::GetType($column.Type).Name
-        }
+          if ($column.IsUid -or $column.IsDynamicFK) {
+            $dateType = "Object"
+          } else {
+            $dateType = [VI.Base.DbVal]::GetType($column.Type).Name
+          }
 
-        $helpText = $null
+          $helpText = $null
 
-        if (-not [string]::IsNullOrEmpty($column.Display)) {
-          $helpText = $column.Display.Translated -replace "’",  "`'" -replace '"', '`"' -replace '“',  '`"' -replace '”',  '`"' -replace "'", "`'"
-        }
+          if (-not [string]::IsNullOrEmpty($column.Display)) {
+            $helpText = $column.Display.Translated -replace "’",  "`'" -replace '"', '`"' -replace '“',  '`"' -replace '”',  '`"' -replace "'", "`'"
+          }
 
-        $columnTemplate = @"
+          $columnTemplate = @"
 `r`n
   [parameter(Mandatory = `$false, HelpMessage = "$helpText")]
   [$dateType] `$$paramName,
 "@
 
-        $funcTemplateHeader = $funcTemplateHeader + $columnTemplate
-      }
-      $funcTemplateHeader = $funcTemplateHeader.Substring(0, $funcTemplateHeader.Length - 1) + ')'
-      $cols[$cols.Length -1 ] = $cols[$cols.Length - 1].Substring(0, $cols[$cols.Length - 1].Length - 1)
+          $funcTemplateHeader = $funcTemplateHeader + $columnTemplate
+        }
+        $funcTemplateHeader = $funcTemplateHeader.Substring(0, $funcTemplateHeader.Length - 1) + ')'
+        $cols[$cols.Length -1 ] = $cols[$cols.Length - 1].Substring(0, $cols[$cols.Length - 1].Length - 1)
 
-      $funcTemplateFooter = @"
+        $funcTemplateFooter = @"
 `r`n
   Process {
-    `$session = `$Global:imsessions['$Prefix'].Session
-    `$cols = @($cols)
+    try {
+      `$session = `$Global:imsessions['$Prefix'].Session
+      `$cols = @($cols)
 
-    if (-not [String]::IsNullOrEmpty(`$Identity) -and `$null -eq `$Entity) {
-      # if the identity is an objectkey, check it belongs to the table this function is associated with.
-      if (`$Identity -like '<Key><T>*</T><P>*</P></Key>') {
-        `$objectKey = [VI.DB.DbObjectKey]::new(`$Identity)
+      if (-not [String]::IsNullOrEmpty(`$Identity) -and `$null -eq `$Entity) {
+        # if the identity is an objectkey, check it belongs to the table this function is associated with.
+        if (`$Identity -like '<Key><T>*</T><P>*</P></Key>') {
+          `$objectKey = [VI.DB.DbObjectKey]::new(`$Identity)
 
-        if (-not (`$objectKey.Tablename -eq '$funcName')) {
-          throw "The provided XObjectKey `$Identity is not valid for objects of type '$funcName'."
+          if (-not (`$objectKey.Tablename -eq '$funcName')) {
+            throw "The provided XObjectKey `$Identity is not valid for objects of type '$funcName'."
+          }
         }
       }
-    }
 
-    `$properties = @{}
-    ForEach (`$boundParam in `$PSBoundParameters.GetEnumerator()) {
-      if ((`$cols -contains `$boundParam.Key)) {
-        `$properties.Add(`$boundParam.Key, `$boundParam.Value)
+      `$properties = @{}
+      ForEach (`$boundParam in `$PSBoundParameters.GetEnumerator()) {
+        if ((`$cols -contains `$boundParam.Key)) {
+          `$properties.Add(`$boundParam.Key, `$boundParam.Value)
+        }
       }
-    }
 
-    Set-Entity -Session `$session -Entity `$Entity -Type '$funcName' -Identity `$Identity -Properties `$properties
+      Set-Entity -Session `$session -Entity `$Entity -Type '$funcName' -Identity `$Identity -Properties `$properties
+    } catch {
+      Resolve-Exception -ExceptionObject `$PSitem
+    }
   }
 }
 "@
 
-      $funcTemplate = $funcTemplateHeader + $funcTemplateFooter
+        $funcTemplate = $funcTemplateHeader + $funcTemplateFooter
 
-      try {
-        Invoke-Expression $funcTemplate
-      } catch {
-        $e = $_.Exception
-        $msg = $e.Message
-        while ($e.InnerException) {
-          $e = $e.InnerException
-          $msg += "`n" + $e.Message
+        try {
+          Invoke-Expression $funcTemplate
+        } catch {
+          Resolve-Exception -ExceptionObject $PSitem
         }
-        write-host $msg
       }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 

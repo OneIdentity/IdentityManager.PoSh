@@ -16,30 +16,39 @@ function Set-Entity {
   )
 
   Begin {
-    # Determine Session to use
-    $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
-    if($null -eq $sessionToUse) {
-      throw [System.ArgumentNullException] 'Session'
+    try {
+      # Determine session to use
+      $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
+      if ($null -eq $sessionToUse) {
+        throw [System.ArgumentNullException] 'Session'
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 
   Process {
-    # Load Object by Identity
-    $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
+    try {
 
-    # Set Property Values
-    foreach($property in $Properties.Keys) {
-      Set-EntityColumnValue -Entity $Entity -Column $property -Value $Properties[$property]
+      # Load object by identity
+      $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
+
+      # Set property values
+      foreach($property in $Properties.Keys) {
+        Set-EntityColumnValue -Entity $Entity -Column $property -Value $Properties[$property]
+      }
+
+      # Save entity via UnitOfWork to database
+      if (-Not $Unsaved) {
+        $uow = New-UnitOfWork -Session $sessionToUse
+        Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $Entity
+        Save-UnitOfWork -UnitOfWork $uow
+      }
+
+      return $Entity
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
-
-    # Save Entity via UnitOfWork to Database
-    if(-Not $Unsaved) {
-      $uow = New-UnitOfWork -Session $sessionToUse
-      Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $Entity
-      Save-UnitOfWork -UnitOfWork $uow
-    }
-
-    return $Entity
   }
 
   End {

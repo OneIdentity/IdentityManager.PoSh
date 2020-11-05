@@ -13,32 +13,42 @@ function New-Entity {
   )
 
   Begin {
-    # Determine Session to use
-    $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
-    if($null -eq $sessionToUse) {
-      throw [System.ArgumentNullException] 'Session'
+    try {
+      # Determine session to use
+      $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
+      if ($null -eq $sessionToUse) {
+        throw [System.ArgumentNullException] 'Session'
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 
   Process {
-    # Create Entity
-    $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
-    $entity = $src.CreateNewAsync($Type, [VI.DB.Entities.EntityParameters]::new(), $noneToken).GetAwaiter().GetResult()
-    $entity = Add-EntityMemberExtensions -Entity $entity
+    try {
 
-    # Set Property Values
-    foreach($property in $Properties.Keys) {
-      Set-EntityColumnValue -Entity $entity -Column $property -Value $Properties[$property]
+      # Create entity
+      $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
+      $entity = $src.CreateNewAsync($Type, [VI.DB.Entities.EntityParameters]::new(), $noneToken).GetAwaiter().GetResult()
+      $entity = Add-EntityMemberExtensions -Entity $entity
+
+      # Set property values
+      foreach($property in $Properties.Keys) {
+        Set-EntityColumnValue -Entity $entity -Column $property -Value $Properties[$property]
+      }
+
+      # Save entity via UnitOfWork to Database
+      if (-Not $Unsaved) {
+        $uow = New-UnitOfWork -Session $sessionToUse
+        Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $entity
+        Save-UnitOfWork -UnitOfWork $uow
+      }
+
+      return $entity
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
 
-    # Save Entity via UnitOfWork to Database
-    if(-Not $Unsaved) {
-      $uow = New-UnitOfWork -Session $sessionToUse
-      Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $entity
-      Save-UnitOfWork -UnitOfWork $uow
-    }
-
-    return $entity
   }
 
   End {

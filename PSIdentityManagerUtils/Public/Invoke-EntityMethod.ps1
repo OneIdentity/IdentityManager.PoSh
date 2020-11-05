@@ -19,28 +19,38 @@
   )
 
   Begin {
-    # Determine Session to use
-    $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
-    if($null -eq $sessionToUse) {
-      throw [System.ArgumentNullException] 'Session'
+    try {
+      # Determine session to use
+      $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
+      if ($null -eq $sessionToUse) {
+        throw [System.ArgumentNullException] 'Session'
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 
   Process {
-    # Load Object by Identity
-    $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
+    try {
 
-    # Call the method
-    [VI.DB.Entities.Entity]::CallMethodAsync($Entity, $MethodName, $Parameters, $noneToken).GetAwaiter().GetResult() | Out-Null
+      # Load object by identity
+      $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
 
-    # Save Entity via UnitOfWork to Database
-    if(-Not $Unsaved) {
-      $uow = New-UnitOfWork -Session $sessionToUse
-      Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $Entity
-      Save-UnitOfWork -UnitOfWork $uow
+      # Call the method
+      [VI.DB.Entities.Entity]::CallMethodAsync($Entity, $MethodName, $Parameters, $noneToken).GetAwaiter().GetResult() | Out-Null
+
+      # Save entity via UnitOfWork to Database
+      if (-Not $Unsaved) {
+        $uow = New-UnitOfWork -Session $sessionToUse
+        Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $Entity
+        Save-UnitOfWork -UnitOfWork $uow
+      }
+
+      return $Entity
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
 
-    return $Entity
   }
 
   End {

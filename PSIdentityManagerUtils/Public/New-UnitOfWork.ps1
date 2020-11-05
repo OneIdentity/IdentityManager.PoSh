@@ -6,17 +6,25 @@
   )
 
   Begin {
-    # Determine Session to use
-    $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
-    if($null -eq $sessionToUse) {
-      throw [System.ArgumentNullException] 'Session'
+    try {
+      # Determine session to use
+      $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
+      if ($null -eq $sessionToUse) {
+        throw [System.ArgumentNullException] 'Session'
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 
   Process {
-    # Create new UnitOfWork instance
-    $unitOfWork = ($sessionToUse).StartUnitOfWork([String][System.Guid]::NewGuid())
-    return $unitOfWork
+    try {
+      # Create new UnitOfWork instance
+      $unitOfWork = ($sessionToUse).StartUnitOfWork([String][System.Guid]::NewGuid())
+      return $unitOfWork
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
+    }
   }
 
   End {

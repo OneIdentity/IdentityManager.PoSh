@@ -1,16 +1,28 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$oneImBasePath = [io.path]::combine(${Env:ProgramFiles}, 'One Identity\One Identity Manager')
+$VIDB = 'VI.DB.dll'
+$ONEIMDIR = 'One Identity\One Identity Manager'
 
-# Precheck if path exists. If not, we set it to the current working directory to hopefully find the needed DLLs relativ to that directory
-if (-not (Test-Path $oneImBasePath -PathType Container))
-{
-  $oneImBasePath = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+# Loading order for the needed assemblies:
+# Try to figure out if there a files relative to our directory
+# if not, try the default Identity Manager installation path
+
+$relativPath = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+if (Test-Path ([io.path]::combine($relativPath, $VIDB))) {
+  $oneImBasePath = $relativPath
+} else {
+  $oneImBasePath = [io.path]::combine(${Env:ProgramFiles}, $ONEIMDIR)
+
+  if (-not (Test-Path $oneImBasePath -PathType Container))
+  {
+    Write-Error -Message "`n[!] Can't find any place with needed Identity Manager assemblies.`n"
+  }
 }
 
-[System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, 'VI.Base.dll')) | Out-Null
-[System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, 'VI.DB.dll')) | Out-Null
+Write-Warning "Using '$oneImBasePath' as base path for loading needed Identity Manager assemblies."
+
+[System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, $VIDB)) | Out-Null
 
 # just for convenience to save typing
 $noneToken = [System.Threading.CancellationToken]::None

@@ -15,27 +15,29 @@
 
   Process
   {
-    $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($Session)
-    if ($null -eq $ModulesToSkip)
-    {
-      $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated }
-    } else {
-      $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated -And (-not $ModulesToSkip.Contains($_.Uid.Substring(0, 3))) }
-    }
+    try {
 
-    $progressCount = 0
-    $totalOperationsCount = $tables.Count
-
-    ForEach ($tableProperty in $tables) {
-      $funcName = $tableProperty.TableName
-
-      # Do not update progress for every function. It takes to much time.
-      if ($progressCount % 10 -eq 0) {
-        Write-Progress -Activity 'Generating "Remove-" functions' -Status "Function $progressCount of $totalOperationsCount" -CurrentOperation "Remove-$Prefix$funcName" -PercentComplete ($progressCount / $totalOperationsCount * 100)
+      $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($Session)
+      if ($null -eq $ModulesToSkip)
+      {
+        $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated }
+      } else {
+        $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated -And (-not $ModulesToSkip.Contains($_.Uid.Substring(0, 3))) }
       }
-      $progressCount++
 
-      $funcTemplateHeader = @"
+      $progressCount = 0
+      $totalOperationsCount = $tables.Count
+
+      ForEach ($tableProperty in $tables) {
+        $funcName = $tableProperty.TableName
+
+        # Do not update progress for every function. It takes to much time.
+        if ($progressCount % 10 -eq 0) {
+          Write-Progress -Activity 'Generating "Remove-" functions' -Status "Function $progressCount of $totalOperationsCount" -CurrentOperation "Remove-$Prefix$funcName" -PercentComplete ($progressCount / $totalOperationsCount * 100)
+        }
+        $progressCount++
+
+        $funcTemplateHeader = @"
 function global:Remove-$Prefix$funcName() {
   Param (
     [parameter(Mandatory = `$false, ValueFromPipeline=`$true, HelpMessage = 'Entity to remove')]
@@ -47,39 +49,40 @@ function global:Remove-$Prefix$funcName() {
   )
 "@
 
-      $funcTemplateFooter = @"
+        $funcTemplateFooter = @"
 `r`n
   Process {
-    `$session = `$Global:imsessions['$Prefix'].Session
+    try {
+      `$session = `$Global:imsessions['$Prefix'].Session
 
-    if (-not [String]::IsNullOrEmpty(`$Identity) -and `$null -eq `$Entity) {
-      # if the identity is an objectkey, check it belongs to the table this function is associated with.
-      if (`$Identity -like '<Key><T>*</T><P>*</P></Key>') {
-        `$objectKey = [VI.DB.DbObjectKey]::new(`$Identity)
+      if (-not [String]::IsNullOrEmpty(`$Identity) -and `$null -eq `$Entity) {
+        # if the identity is an objectkey, check it belongs to the table this function is associated with.
+        if (`$Identity -like '<Key><T>*</T><P>*</P></Key>') {
+          `$objectKey = [VI.DB.DbObjectKey]::new(`$Identity)
 
-        if (-not (`$objectKey.Tablename -eq '$funcName')) {
-          throw "The provided XObjectKey `$Identity is not valid for objects of type '$funcName'."
+          if (-not (`$objectKey.Tablename -eq '$funcName')) {
+            throw "The provided XObjectKey `$Identity is not valid for objects of type '$funcName'."
+          }
         }
       }
-    }
 
-    Remove-Entity -Session `$session -Entity `$Entity -Type '$funcName' -Identity `$Identity -IgnoreDeleteDelay:`$IgnoreDeleteDelay
+      Remove-Entity -Session `$session -Entity `$Entity -Type '$funcName' -Identity `$Identity -IgnoreDeleteDelay:`$IgnoreDeleteDelay
+    } catch {
+      Resolve-Exception -ExceptionObject `$PSitem
+    }
   }
 }
 "@
 
-      $funcTemplate = $funcTemplateHeader + $funcTemplateFooter
-      try {
-        Invoke-Expression $funcTemplate
-      } catch {
-        $e = $_.Exception
-        $msg = $e.Message
-        while ($e.InnerException) {
-          $e = $e.InnerException
-          $msg += "`n" + $e.Message
+        $funcTemplate = $funcTemplateHeader + $funcTemplateFooter
+        try {
+          Invoke-Expression $funcTemplate
+        } catch {
+          Resolve-Exception -ExceptionObject $PSitem
         }
-        write-host $msg
       }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 

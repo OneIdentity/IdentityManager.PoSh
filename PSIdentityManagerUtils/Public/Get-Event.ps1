@@ -11,35 +11,43 @@
   )
 
   Begin {
-    # Determine Session to use
-    $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
-    if($null -eq $sessionToUse) {
-      throw [System.ArgumentNullException] 'Session'
+    try {
+      # Determine session to use
+      $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
+      if ($null -eq $sessionToUse) {
+        throw [System.ArgumentNullException] 'Session'
+      }
+      $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
-    $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
   }
 
   Process {
-    # Load Object by Identity
-    $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
+    try {
 
-    if ($null -ne $Entity.PSObject.Members['Table']) {
-      $uid = $Entity.Table.Uid
-    } else {
-      $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($sessionToUse)
-      $tableMetaData = $metaData.GetTableAsync($Entity.Tablename, $noneToken).GetAwaiter().GetResult()
-      $uid = $tableMetaData.Uid
-    }
+      # Load object by identity
+      $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
 
-    $query = [VI.DB.Entities.Query]::From('QBMEvent').Where("UID_DialogTable = '$uid'").Select('EventName')
-    $entityCollection = $src.GetCollectionAsync($query, [VI.DB.Entities.EntityCollectionLoadType]::Slim, $noneToken).GetAwaiter().GetResult()
+      if ($null -ne $Entity.PSObject.Members['Table']) {
+        $uid = $Entity.Table.Uid
+      } else {
+        $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($sessionToUse)
+        $tableMetaData = $metaData.GetTableAsync($Entity.Tablename, $noneToken).GetAwaiter().GetResult()
+        $uid = $tableMetaData.Uid
+      }
 
-    ForEach ($e in $entityCollection) {
-      Write-Host (Get-EntityColumnValue -Entity $e -Column "EventName")
+      $query = [VI.DB.Entities.Query]::From('QBMEvent').Where("UID_DialogTable = '$uid'").Select('EventName')
+      $entityCollection = $src.GetCollectionAsync($query, [VI.DB.Entities.EntityCollectionLoadType]::Slim, $noneToken).GetAwaiter().GetResult()
+
+      ForEach ($e in $entityCollection) {
+        Write-Host (Get-EntityColumnValue -Entity $e -Column "EventName")
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 
   End {
-
   }
 }
