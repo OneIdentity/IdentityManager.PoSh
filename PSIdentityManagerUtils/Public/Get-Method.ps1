@@ -11,29 +11,39 @@
   )
 
   Begin {
-    # Determine Session to use
-    $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
-    if($null -eq $sessionToUse) {
-      throw [System.ArgumentNullException] 'Session'
+    try {
+      # Determine session to use
+      $sessionToUse = Get-IdentityManagerSessionToUse -Session $Session
+      if ($null -eq $sessionToUse) {
+        throw [System.ArgumentNullException] 'Session'
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 
   Process {
-    # Load Object by Identity
-    $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
+    try {
 
-    $objectMethods = [VI.DB.Entities.Entity]::GetEntityMethodsAsync($Entity, $sessionToUse, $null, $noneToken).GetAwaiter().GetResult()
+      # Load object by identity
+      $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
 
-    Write-Host 'Object methods'
-    ForEach ($om in $objectMethods) {
-      Write-Host "`t" $om.Caption.Original
+      $objectMethods = [VI.DB.Entities.Entity]::GetEntityMethodsAsync($Entity, $sessionToUse, $null, $noneToken).GetAwaiter().GetResult()
+
+      Write-Host 'Object methods'
+      ForEach ($om in $objectMethods) {
+        Write-Host "`t" $om.Caption.Original
+      }
+
+      $customizerMethods = [VI.DB.Entities.Entity]::GetMethodsAsync($Entity, $sessionToUse, $noneToken).GetAwaiter().GetResult()
+      Write-Host 'Customizer methods'
+      ForEach ($cm in $customizerMethods) {
+        Write-Host "`t" $cm.Key
+      }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
 
-    $customizerMethods = [VI.DB.Entities.Entity]::GetMethodsAsync($Entity, $sessionToUse, $noneToken).GetAwaiter().GetResult()
-    Write-Host 'Customizer methods'
-    ForEach ($cm in $customizerMethods) {
-      Write-Host "`t" $cm.Key
-    }
   }
 
   End {

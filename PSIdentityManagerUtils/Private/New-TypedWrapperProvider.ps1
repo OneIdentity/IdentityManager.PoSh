@@ -15,60 +15,62 @@
 
   Process
   {
-    $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($Session)
-    if ($null -eq $ModulesToSkip)
-    {
-      $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated }
-    } else {
-      $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated -And (-not $ModulesToSkip.Contains($_.Uid.Substring(0, 3))) }
-    }
+    try {
 
-    $progressCount = 0
-    $totalOperationsCount = $tables.Count
-
-    ForEach ($tableProperty in $tables) {
-      $funcName = $tableProperty.TableName
-
-      # Do not update progress for every function. It takes to much time.
-      if ($progressCount % 10 -eq 0) {
-        Write-Progress -Activity 'Generating "New-" functions' -Status "Function $progressCount of $totalOperationsCount" -CurrentOperation "New-$Prefix$funcName" -PercentComplete ($progressCount / $totalOperationsCount * 100)
+      $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($Session)
+      if ($null -eq $ModulesToSkip)
+      {
+        $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated }
+      } else {
+        $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated -And (-not $ModulesToSkip.Contains($_.Uid.Substring(0, 3))) }
       }
-      $progressCount++
 
-      $funcTemplateHeader = @"
+      $progressCount = 0
+      $totalOperationsCount = $tables.Count
+
+      ForEach ($tableProperty in $tables) {
+        $funcName = $tableProperty.TableName
+
+        # Do not update progress for every function. It takes to much time.
+        if ($progressCount % 10 -eq 0) {
+          Write-Progress -Activity 'Generating "New-" functions' -Status "Function $progressCount of $totalOperationsCount" -CurrentOperation "New-$Prefix$funcName" -PercentComplete ($progressCount / $totalOperationsCount * 100)
+        }
+        $progressCount++
+
+        $funcTemplateHeader = @"
 function global:New-$Prefix$funcName() {
   Param (
 "@
 
-      $cols = new-object string[] 0
-      ForEach ($column in $tableProperty.Columns) {
-        if (-not $column.Enabled) {
-          # Skip deactivated columns
-          Continue
-        }
-        $cols += "'" + $column.ColumnName + "',"
-        $paramName = $column.ColumnName
-        $dateType = [VI.Base.DbVal]::GetType($column.Type).Name
-        $mandatory = $column.MinLen -gt 0 -and (-not ($column.IsPK -and $column.IsUid) -or $tableProperty.IsMNTable)
+        $cols = new-object string[] 0
+        ForEach ($column in $tableProperty.Columns) {
+          if (-not $column.Enabled) {
+            # Skip deactivated columns
+            Continue
+          }
+          $cols += "'" + $column.ColumnName + "',"
+          $paramName = $column.ColumnName
+          $dateType = [VI.Base.DbVal]::GetType($column.Type).Name
+          $mandatory = $column.MinLen -gt 0 -and (-not ($column.IsPK -and $column.IsUid) -or $tableProperty.IsMNTable)
 
-        if ($mandatory -And $tableProperty.Type -eq 'View')
-        {
-          # The chance is high, that a view will get some default data
-          $mandatory = $false
-        }
+          if ($mandatory -And $tableProperty.Type -eq 'View')
+          {
+            # The chance is high, that a view will get some default data
+            $mandatory = $false
+          }
 
-        $helpText = $null
+          $helpText = $null
 
-        if (-not [string]::IsNullOrEmpty($column.Display)) {
-          $helpText = $column.Display.Translated -replace "’",  "`'" -replace '"', '`"' -replace '“',  '`"' -replace '”',  '`"' -replace "'", "`'"
-        }
+          if (-not [string]::IsNullOrEmpty($column.Display)) {
+            $helpText = $column.Display.Translated -replace "’",  "`'" -replace '"', '`"' -replace '“',  '`"' -replace '”',  '`"' -replace "'", "`'"
+          }
 
-        $validateNotNull = ''
-        if ($mandatory) {
-          $validateNotNull = '[ValidateNotNull()]'
-        }
+          $validateNotNull = ''
+          if ($mandatory) {
+            $validateNotNull = '[ValidateNotNull()]'
+          }
 
-        $columnTemplate = @"
+          $columnTemplate = @"
 `r`n
   [parameter(Mandatory = `$$mandatory, HelpMessage = "$helpText")]
   $validateNotNull
@@ -82,33 +84,34 @@ function global:New-$Prefix$funcName() {
       $funcTemplateFooter = @"
 `r`n
   Process {
-    `$session = `$Global:imsessions['$Prefix'].Session
-    `$cols = @($cols)
+    try {
+      `$session = `$Global:imsessions['$Prefix'].Session
+      `$cols = @($cols)
 
-    `$properties = @{}
-    ForEach (`$boundParam in `$PSBoundParameters.GetEnumerator()) {
-      if ((`$cols -contains `$boundParam.Key)) {
-        `$properties.Add(`$boundParam.Key, `$boundParam.Value)
+      `$properties = @{}
+      ForEach (`$boundParam in `$PSBoundParameters.GetEnumerator()) {
+        if ((`$cols -contains `$boundParam.Key)) {
+          `$properties.Add(`$boundParam.Key, `$boundParam.Value)
+        }
       }
-    }
 
-    New-Entity -Session `$session -Type '$funcName' -Properties `$properties
+      New-Entity -Session `$session -Type '$funcName' -Properties `$properties
+    } catch {
+      Resolve-Exception -ExceptionObject `$PSitem
+    }
   }
 }
 "@
 
-      $funcTemplate = $funcTemplateHeader + $funcTemplateFooter
-      try {
-        Invoke-Expression $funcTemplate
-      } catch {
-        $e = $_.Exception
-        $msg = $e.Message
-        while ($e.InnerException) {
-          $e = $e.InnerException
-          $msg += "`n" + $e.Message
+        $funcTemplate = $funcTemplateHeader + $funcTemplateFooter
+        try {
+          Invoke-Expression $funcTemplate
+        } catch {
+          Resolve-Exception -ExceptionObject $PSitem
         }
-        write-host $msg
       }
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
   }
 

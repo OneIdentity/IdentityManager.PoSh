@@ -13,7 +13,13 @@
   }
 
   Process {
-    ($UnitOfWork).PutAsync($Entity, [VI.DB.Entities.PutOptions]::new(), $noneToken).GetAwaiter().GetResult() | Out-Null
+
+    try {
+      ($UnitOfWork).PutAsync($Entity, [VI.DB.Entities.PutOptions]::new(), $noneToken).GetAwaiter().GetResult() | Out-Null
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
+    }
+
   }
 
   End {
