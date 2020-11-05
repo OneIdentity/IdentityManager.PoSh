@@ -92,7 +92,7 @@ You can get some more details about the available properties by issuing ```Get-H
 
 #### Generic option of loading an entity
 
-An entity can be loaded directly either by the corresponding XObjectKey or by it's UID in combination with specifying it's type.
+An entity can be loaded directly either by the corresponding XObjectKey or by its UID in combination with specifying its type.
 
     $x = Get-Entity -Identity "<Key><T>Person</T><P>0f4de334-38e5-4bdf-bfe0-4ae9690c4f2b</P></Key>"
 
@@ -113,7 +113,7 @@ To limit the number of returned entities, you can specify a value for the Parame
 
 Beside the generic method of loading entities it's also possible to use the typed wrapper functions.
 
-To load an entity by it's unique identity keys (UID or XObjectKey) use:
+To load an entity by its unique identity keys (UID or XObjectKey) use:
 
     $p = Get-Person -Identity '4782235b-f606-4c2b-9e3e-b95727b61456'
     $p.Display
@@ -131,7 +131,7 @@ Also the retrieving of several entities is possible:
     # Retrieve 15 persons
     Get-Person -ResultSize 15 | Sort-Object -Property Display | Format-Table Display
 
-    # Retrieve all Departments there Departmentname starts with letter V
+    # Retrieve all Departments there name starts with letter V
     Get-Department -FilterClause "DepartmentName like 'V%'" | Sort-Object -Property Display | Format-Table Display
 
 ⚠ Hint
@@ -154,26 +154,26 @@ For example to add a value to column CustomProperty01 of every Department:
 
     Get-Department |Set-Department -CustomProperty01 'xyz'
 
-#### Special handling or foreign keys
+#### Special handling of foreign keys
 
 Foreign keys can be handled either by the string representation of the primary key or directly with an entity:
 
-    # Assign a manager to an department / the UID_Person must be known
+    # Assign a manager to a department / the UID_Person must be known
     Get-Department -DepartmentName 'D1' |Set-Department -UID_PersonHead 'a5a169ab-eac3-4292-9b05-20eeba990379'
 
-    # Assign a manager to an department by its entity
+    # Assign a manager to a department by its entity
     $p1 = Get-Person -CentralAccount 'marada'
     Get-Department -DepartmentName 'D1' |Set-Department -UID_PersonHead $p1
 
 #### Direct modification of entity values
 
-It's even possible to modify a loaded entity directly. In then following sample a person entity is loaded, the lastname as well as then direct department assignment is changed:
+It's even possible to modify a loaded entity directly. In the following sample a person entity is loaded, the last name as well as the direct department assignment is changed:
 
     # Load person with last name Lustig
     $p1 = Get-Person -Lastname 'Lustig'
     # Modify the last name of that loaded person
     $p1.Lastname = 'Lustiger'
-    # Load Accouting department
+    # Load Accounting department
     Get-Department -FilterClause "DepartmentName = 'Accounting'"
     # Set Accounting department
     $p1.UID_Department = $d1
@@ -182,7 +182,7 @@ It's even possible to modify a loaded entity directly. In then following sample 
 
 #### Generic option of removing an entity
 
-To delete an entity from the database you have to call the Remove-Entity method. In the first place, this will only mark the entity for deletion and not delete it directly. For an direct deletion you have to specify the parameter ```-IgnoreDeleteDelay``` as well.
+To delete an entity from the database you have to call the Remove-Entity method. In the first place, this will only mark the entity for deletion and not delete it directly. For a direct deletion you have to specify the parameter ```-IgnoreDeleteDelay``` as well.
 
     Remove-Entity -Type Person -Identity "0f4de334-38e5-4bdf-bfe0-4ae9690c4f2b"
 
@@ -200,7 +200,7 @@ Both methods support pipelining for entities.
 
 #### Show possible events for an entity
 
-To get a list of possible events to trigger for an specific entity use:
+To get a list of possible events to trigger for a specific entity use:
 
     Get-Event -Entity $p1
 
@@ -210,11 +210,11 @@ After you know the name for the event to trigger, you can fire it like:
 
     Invoke-Event -Entity $p1 -EventName "CHECK_EXITDATE"
 
-It's also possible to pass certain event parameters if needed. Use ```EventParameters``` as hash table for that.
+It's possible to pass certain event parameters if needed. Use ```EventParameters``` as hash table for that.
 
 ### Dealing with methods
 
-The identity manager supports object as well as customizer methods. The following functions support the handling of entities withhin pipelines.
+The identity manager supports object as well as customizer methods. The following functions support the handling of entities within pipelines.
 
 #### Show possible methods for an entity
 
@@ -242,7 +242,7 @@ It's good practice to close any database session after usage.
 
 ### Dealing with multiple database sessions
 
-The Identity Manager powershell utils allows you to deal with multiple database connections at the same time. For every session you have to specify an unique prefix for that specific connection:
+The Identity Manager powershell utils allows you to deal with multiple database connections at the same time. For every session you have to specify a unique prefix for that specific connection:
 
     New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -Prefix db1
 
