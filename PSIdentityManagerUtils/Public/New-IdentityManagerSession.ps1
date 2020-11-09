@@ -36,6 +36,7 @@ function New-IdentityManagerSession {
       # Create the session
       $factory = New-Object -TypeName $FactoryName
       $sessionfactory = [VI.DB.DbApp]::ConnectTo($ConnectionString).Using($factory).BuildSessionFactory()
+
       $session = [VI.DB.Sync.SyncSessionFactoryExtensions]::Open($sessionfactory, $AuthenticationString)
 
       # Add session to global session store

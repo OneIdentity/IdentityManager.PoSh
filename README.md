@@ -31,13 +31,21 @@ The Identity Manager product DLLs
 
 ⚠ Hint
 
-It is recommended to using the Application Server connection! 
+It is recommended to use the Application Server connection!
 
 ## Basic usage
 
 ### Importing the module
 
     Import-Module .\PSIdentityManagerUtils -Force
+
+### List supported modules for authentication
+
+After the import, a list of supported authentication modules can be shown. You can find more information about authentication modules in the [documentation](https://support.oneidentity.com/de-de/technical-documents/identity-manager/8.1.3/authorization-and-authentication-guide/17#TOPIC-1480519). Later, [a first session](#A-first-session) can be established by choosing one of the supported authentication modules.
+
+    $connectionString = 'url=https://<URL>/AppServer/'
+    $factory = 'QBM.AppServer.Client.ServiceClientFactory'
+    Get-Authentifier -ConnectionString $connectionString -FactoryName $factory
 
 ### A first session
 
@@ -57,8 +65,8 @@ It may happen that errors occur during the function generation ```Function ... c
 #### Application server connection
 
     $connectionString = 'url=https://<URL>/AppServer/'
-    $authenticationString = 'Module=DialogUser;User=viadmin;Password=<Password>'
     $factory = 'QBM.AppServer.Client.ServiceClientFactory'
+    $authenticationString = 'Module=DialogUser;User=viadmin;Password=<Password>'
     New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -FactoryName $factory
 
 ⚠ Hint
@@ -239,6 +247,25 @@ It's good practice to close any database session after usage.
     Remove-IdentityManagerSession
 
 ## Advanced usage
+
+### Using of session variables
+
+Within Identity Manager the usage of session based variables is supported. You can find more information in the [documentation](https://support.oneidentity.com/de-de/technical-documents/identity-manager/8.1.3/configuration-guide/71#TOPIC-1481129).
+
+⚠ Hint
+If you define a custom session variable, you must remove it again afterward. Otherwise it remains for the rest of the session and, in certain circumstances, the wrong processes can be generated.
+
+    # Get the session
+    $sessionToUse = $Global:imsessions[$Global:imsessions.Keys[0]].Session
+
+    # Add variable
+    sessionToUse.Variables.Put('Variable_1', 'Value of variable 1')
+
+    # Query a variable
+    $sessionToUse.Variables['Variable_1']
+
+    # Remove a variable
+    $sessionToUse.Variables.Remove('Variable_1')
 
 ### Dealing with multiple database sessions
 
