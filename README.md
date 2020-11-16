@@ -26,6 +26,9 @@ The Identity Manager product DLLs
     * ServiceStack.dll
     * ServiceStack.Interfaces.dll
     * ServiceStack.Text.dll
+    * System.Memory.dll
+    * System.Numerics.Vectors.dll
+    * System.Runtime.CompilerServices.Unsafe.dll
     * VI.Base.dll
     * VI.DB.dll
 

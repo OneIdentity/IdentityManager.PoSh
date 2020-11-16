@@ -30,11 +30,16 @@ function New-IdentityManagerSession {
       }
 
       if ($FactoryName -eq 'QBM.AppServer.Client.ServiceClientFactory') {
+        [System.AppDomain]::CurrentDomain.add_AssemblyResolve($Global:OnAssemblyResolve)
         [System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, 'QBM.AppServer.Client.dll')) | Out-Null
       }
 
       # Create the session
       $factory = New-Object -TypeName $FactoryName
+
+      # We have to deregister the event handler here otherwise the powershell get's a stackoverflow
+      [System.AppDomain]::CurrentDomain.remove_AssemblyResolve($Global:OnAssemblyResolve)
+
       $sessionfactory = [VI.DB.DbApp]::ConnectTo($ConnectionString).Using($factory).BuildSessionFactory()
 
       $session = [VI.DB.Sync.SyncSessionFactoryExtensions]::Open($sessionfactory, $AuthenticationString)
