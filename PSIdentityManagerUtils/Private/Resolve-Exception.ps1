@@ -13,23 +13,32 @@ function Resolve-Exception {
 
     Process
     {
+      $sst = ""
       $st = ""
       $e = $ExceptionObject.Exception
       if ($null -ne (Get-Member -InputObject $ExceptionObject -Name "ScriptStackTrace")) {
-        $st = $ExceptionObject.ScriptStackTrace
+        $sst = $ExceptionObject.ScriptStackTrace
+      }
+      if ($null -ne (Get-Member -InputObject $ExceptionObject -Name "StackTrace")) {
+        $st = $ExceptionObject.StackTrace
       }
 
       $msg = $e.Message
       while ($e.InnerException) {
         $e = $e.InnerException
+
         $msg += "`n" + $e.Message
         if ($null -ne (Get-Member -InputObject $e -Name "ScriptStackTrace")) {
-          $st += "`n" + $e.ScriptStackTrace + "`n---"
+          $sst += "`n" + $e.ScriptStackTrace + "`n---"
+        }
+
+        if ($null -ne (Get-Member -InputObject $e -Name "StackTrace")) {
+          $st += "`n" + $e.StackTrace + "`n---"
         }
       }
 
-      if (-not $HideStackTrace) {
-        $msg += "`n---`n" + $st
+      if (-not ($HideStackTrace)) {
+        $msg += "`n---[ScriptStackTrace]---`n" + $sst + "`n---[StackTrace]---`n" + $st
       }
       Write-Error -Message $msg -ErrorAction Stop
     }
