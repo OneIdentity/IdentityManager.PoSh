@@ -30,7 +30,7 @@ function New-Entity {
       # Create entity
       $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
       $entity = $src.CreateNewAsync($Type, [VI.DB.Entities.EntityParameters]::new(), $noneToken).GetAwaiter().GetResult()
-      $entity = Add-s -Entity $entity
+      $entity = Add-EntityMemberExtensions -Entity $entity
 
       # Set property values
       foreach($property in $Properties.Keys) {
