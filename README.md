@@ -262,7 +262,7 @@ If you define a custom session variable, you must remove it again afterward. Oth
     $sessionToUse = $Global:imsessions[$Global:imsessions.Keys[0]].Session
 
     # Add variable
-    sessionToUse.Variables.Put('Variable_1', 'Value of variable 1')
+    $sessionToUse.Variables.Put('Variable_1', 'Value of variable 1')
 
     # Query a variable
     $sessionToUse.Variables['Variable_1']
