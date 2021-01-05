@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.0.6] - 2021-01-04
+
+### Fixes
+
+- Fix [#7](https://github.com/OneIdentity/IdentityManager.PoSh/issues/7) New-Entity fails with error: "Resolve-Exception : The term 'Add-s' is not recognized as the name of a cmdlet..."
+
+### Testing
+
+### Miscellaneous
+
 ## [0.0.5] - 2020-11-19
 
 ### Fixes
