@@ -1,4 +1,11 @@
 # CHANGELOG
+## [0.0.7] - 2021-01-13
+
+### Fixes
+
+### Testing
+
+### Miscellaneous
 
 ## [0.0.6] - 2021-01-04
 
