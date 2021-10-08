@@ -1,4 +1,15 @@
 # CHANGELOG
+## [0.0.10] - 2021-10-08
+
+### Fixes
+
+- Add method ```Get-TableCount```
+
+### Testing
+
+- Add tests for method ```Get-TableCount```
+
+### Miscellaneous
 
 ## [0.0.9] - 2021-10-08
 
@@ -9,7 +20,6 @@
 ### Testing
 
 ### Miscellaneous
-
 
 ## [0.0.8] - 2021-10-08
 

@@ -25,7 +25,7 @@ Write-Warning "Using '$oneImBasePath' as base path for loading needed Identity M
 
 [System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, $VIDB)) | Out-Null
 $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo([io.path]::combine($oneImBasePath, $VIDB)).ProductVersion
-Write-Host "Client version is $clientVersion"
+Write-Output "Client version is $clientVersion"
 
 $Global:OnAssemblyResolve = [System.ResolveEventHandler] {
   param($s, $e)
