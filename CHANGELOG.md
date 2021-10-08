@@ -1,4 +1,16 @@
 # CHANGELOG
+
+## [0.0.9] - 2021-10-08
+
+### Fixes
+
+- Rename ```Get-Method``` to ```Get-EntityMethod```
+
+### Testing
+
+### Miscellaneous
+
+
 ## [0.0.8] - 2021-10-08
 
 ### Fixes

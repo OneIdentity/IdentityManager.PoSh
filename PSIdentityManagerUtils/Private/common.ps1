@@ -24,6 +24,8 @@ if (Test-Path ([io.path]::combine($relativPath, $VIDB))) {
 Write-Warning "Using '$oneImBasePath' as base path for loading needed Identity Manager assemblies."
 
 [System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, $VIDB)) | Out-Null
+$clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo([io.path]::combine($oneImBasePath, $VIDB)).ProductVersion
+Write-Host "Client version is $clientVersion"
 
 $Global:OnAssemblyResolve = [System.ResolveEventHandler] {
   param($s, $e)

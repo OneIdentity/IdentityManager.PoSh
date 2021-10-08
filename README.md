@@ -393,7 +393,7 @@ The identity manager supports object as well as customizer methods. The followin
 <!-- Show possible methods for an entity -->
 #### Show possible methods for an entity
 
-    Get-Method -Entity $p1
+    Get-EntityMethod -Entity $p1
 
 [:top:](#table-of-contents)
 
