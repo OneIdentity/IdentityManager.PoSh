@@ -17,6 +17,7 @@ A Powershell library for One Identity Manager interaction.
         <ul>
             <li><a href="#direct-database-connection">Direct database connection</a></li>
             <li><a href="#application-server-connection">Application server connection</a></li>
+            <li><a href="#counting-objects">Counting objects</a></li>
         </ul>
         <li><a href="#creating-an-entity">Creating an entity</a>
         <ul>
@@ -184,6 +185,17 @@ To deal with special certificate requirements you can provide some extra argumen
 As an example to skip wrapper function generation for certain tables / objects use:
 
     New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -FactoryName $factory -ModulesToSkip 'EBS','CSM','UCI','AAD'
+
+[:top:](#table-of-contents)
+
+<!-- Counting objects -->
+### Counting objects
+
+To get the number of objects in a table use the ```Get-TableCount``` method:
+
+    Get-TableCount -Name 'DialogDatabase'
+
+To filter the objects to be counted, specify the ```-Filter``` property with an approbate sql where clause.
 
 [:top:](#table-of-contents)
 

@@ -20,6 +20,7 @@ function Get-Entity {
       if ($null -eq $sessionToUse) {
         throw [System.ArgumentNullException] 'Session'
       }
+      $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }
@@ -27,8 +28,6 @@ function Get-Entity {
 
   Process {
     try {
-
-    $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
 
       if (-not [String]::IsNullOrEmpty($Identity)) {
         if (-not ([String]::IsNullOrEmpty($Type))) {

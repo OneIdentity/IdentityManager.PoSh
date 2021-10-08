@@ -18,6 +18,7 @@ function Get-EntityByIdentity {
       if ($null -eq $sessionToUse) {
         throw [System.ArgumentNullException] 'Session'
       }
+      $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }
@@ -25,7 +26,6 @@ function Get-EntityByIdentity {
 
   Process {
     try {
-      $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
 
       # Convenience: If user already specified an entity then use it
       if ($null -eq $Entity) {

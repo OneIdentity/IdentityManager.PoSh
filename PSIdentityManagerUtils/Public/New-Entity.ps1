@@ -19,6 +19,7 @@ function New-Entity {
       if ($null -eq $sessionToUse) {
         throw [System.ArgumentNullException] 'Session'
       }
+      $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }
@@ -28,7 +29,6 @@ function New-Entity {
     try {
 
       # Create entity
-      $src = [VI.DB.Entities.SessionExtensions]::Source($sessionToUse)
       $entity = $src.CreateNewAsync($Type, [VI.DB.Entities.EntityParameters]::new(), $noneToken).GetAwaiter().GetResult()
       $entity = Add-EntityMemberExtension -Entity $entity
 
