@@ -1,4 +1,21 @@
 # CHANGELOG
+## [0.0.8] - 2021-10-08
+
+### Fixes
+
+- Reload entities to allow further updates
+- Don't try to load an entity if it already passed
+
+### Testing
+
+- First typed wrapper tests
+
+### Miscellaneous
+
+- Major improvements for [README.md](README.md)
+- Add new script [handle_deps.ps1](handle_deps.ps1) to allow easy handling of external product DLLs
+- Rename License file to [LICENSE.md](LICENSE.md)
+
 ## [0.0.7] - 2021-01-13
 
 ### Fixes
@@ -21,8 +38,8 @@
 
 ### Fixes
 
-- Fix missing $ in README.md
-- Fix missing DLLs in README.md
+- Fix missing $ in [README.md](README.md)
+- Fix missing DLLs in [README.md](README.md)
 
 ### Features
 
@@ -47,4 +64,3 @@
 - Introduce Pester tests
 
 ### Miscellaneous
-
