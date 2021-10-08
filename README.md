@@ -4,7 +4,6 @@
 # IdentityManager.PoSh
 A Powershell library for One Identity Manager interaction.
 
-<!-- toc -->
 <details open="open">
   <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
   <ol>
@@ -84,7 +83,7 @@ A Powershell library for One Identity Manager interaction.
 
 This library is known to work with One Identity Manager version 8.0x and 8.1x.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Requirements -->
 ## Requirements
@@ -122,19 +121,19 @@ The Identity Manager product DLLs
 
 It is recommended to use the Application Server connection!
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Basic usage -->
 ## Basic usage
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Importing the module -->
 ### Importing the module
 
     Import-Module .\PSIdentityManagerUtils -Force
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- List supported modules for authentication -->
 ### List supported modules for authentication
@@ -145,7 +144,7 @@ After the import, a list of supported authentication modules can be shown. You c
     $factory = 'QBM.AppServer.Client.ServiceClientFactory'
     Get-Authentifier -ConnectionString $connectionString -FactoryName $factory
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- A first session -->
 ### A first session
@@ -157,7 +156,7 @@ After the module is imported, a first connection (session) can be established. A
 The function generation for wrapper functions ("```New-```", "```Get-```", "```Set-```" and "```Remove-```") will be skipped for every disabled table / object type. If an object may have disabled columns, these columns either won't be added as possible parameters.
 It may happen that errors occur during the function generation ```Function ... cannot be created because function capacity 4096 has been exceeded for this scope.```. This is a limitation by Powershell. You can workaround this error by skipping the function generation for specific modules by using the parameter ```-ModulesToSkip``` during the call of ```New-IdentityManagerSession```. An alternative for that is overwriting the limitation for the maximum function capacity by setting a new value like ```$MaximumFunctionCount = 10000``` just before you import the PSIdentityManagerUtils module.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Direct database connection -->
 #### Direct database connection
@@ -166,7 +165,7 @@ It may happen that errors occur during the function generation ```Function ... c
     $authenticationString = 'Module=DialogUser;User=viadmin;Password=<Password>'
     New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Application server connection -->
 #### Application server connection
@@ -186,12 +185,12 @@ As an example to skip wrapper function generation for certain tables / objects u
 
     New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -FactoryName $factory -ModulesToSkip 'EBS','CSM','UCI','AAD'
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Creating an entity -->
 ### Creating an entity
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Generic option of creating an entity -->
 #### Generic option of creating an entity
@@ -200,7 +199,7 @@ To create a new entity in a generic way use:
 
     $person = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Fritz'; 'LastName' = 'Fuchs' }
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Typed wrapper function for creation of an entity -->
 #### Typed wrapper function for creation of an entity
@@ -212,12 +211,12 @@ Next, a first object can be created. In this example we are going to create a pe
 To get some more details about the person, just call the assigned variable with ```$p1```.
 You can get some more details about the available properties by issuing ```Get-Help New-Person```. Also all mandatory fields will be marked by only ```[<parameter>]``` and every optional with ```[[<parameter>]]```.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Entity loading -->
 ### Entity loading
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Generic option of loading an entity -->
 #### Generic option of loading an entity
@@ -228,7 +227,7 @@ An entity can be loaded directly either by the corresponding ```XObjectKey``` or
 
     $y = Get-Entity -Identity "0f4de334-38e5-4bdf-bfe0-4ae9690c4f2b" -Type Person
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Loading of multiple generic entities -->
 #### Loading of multiple generic entities
@@ -242,7 +241,7 @@ In the next example, all entities in the Person table that have the same last na
 
 To limit the number of returned entities, you can specify a value for the Parameter ```-ResultSize```. The default value is 1.000 records.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Typed wrapper function for loading of an entity -->
 #### Typed wrapper function for loading of an entity
@@ -257,7 +256,7 @@ To load an entity by its unique identity keys (```UID``` or ```XObjectKey```) us
     $p = Get-Person -Identity '<Key><T>Person</T><P>4782235b-f606-4c2b-9e3e-b95727b61456</P></Key>'
     $p.Display
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Loading of multiple typed entities -->
 #### Loading of multiple typed entities
@@ -277,12 +276,12 @@ Also the retrieving of several entities is possible:
 
 To limit the number of returned entities, you can specify a value for the Parameter ```-ResultSize```. The default value is 1.000 records.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Modifying an entity -->
 ### Modifying an entity
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Generic option of modifying an entity -->
 #### Generic option of modifying an entity
@@ -291,7 +290,7 @@ You can modify a value of an entity like that.
 
     Set-Entity -Type Person -Identity "0f4de334-38e5-4bdf-bfe0-4ae9690c4f2b" -Properties @{'LastName' = 'Schmidt'}
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Typed wrapper function for modifying an entity -->
 #### Typed wrapper function for modifying an entity
@@ -302,7 +301,7 @@ For example to add a value to column CustomProperty01 of every Department:
 
     Get-Department |Set-Department -CustomProperty01 'xyz'
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Handling of foreign keys -->
 #### Handling of foreign keys
@@ -316,7 +315,7 @@ Foreign keys can be handled either by the string representation of the primary k
     $p1 = Get-Person -CentralAccount 'marada'
     Get-Department -DepartmentName 'D1' |Set-Department -UID_PersonHead $p1
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Direct modification of entity values -->
 #### Direct modification of entity values
@@ -332,12 +331,12 @@ It's even possible to modify a loaded entity directly. In the following sample a
     # Set Accounting department
     $p1.UID_Department = $d1
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Removing an entity -->
 ### Removing an entity
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Generic option of removing an entity -->
 #### Generic option of removing an entity
@@ -346,7 +345,7 @@ To delete an entity from the database you have to call the ```Remove-Entity``` m
 
     Remove-Entity -Type Person -Identity "0f4de334-38e5-4bdf-bfe0-4ae9690c4f2b"
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Typed wrapper function for removing an entity -->
 #### Typed wrapper function for removing an entity
@@ -357,14 +356,14 @@ Objects can be removed by there corresponding ```Remove-``` function. You have t
     Remove-Person -Identity '<Key><T>Person</T><P>1b3441fa-c2d3-4a18-9fc2-40d364039234</P></Key>'
     Get-Entity -Type 'Person' -Filter "Lastname = 'Lustig'" |Remove-Person -IgnoreDeleteDelay
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Dealing with events -->
 ### Dealing with events
 
 Both methods support pipelining for entities.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Show possible events for an entity -->
 #### Show possible events for an entity
@@ -382,21 +381,21 @@ After you know the name for the event to trigger, you can fire it like:
 
 It's possible to pass certain event parameters if needed. Use ```EventParameters``` as hash table for that.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Dealing with methods -->
 ### Dealing with methods
 
 The identity manager supports object as well as customizer methods. The following functions support the handling of entities within pipelines.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Show possible methods for an entity -->
 #### Show possible methods for an entity
 
     Get-Method -Entity $p1
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Run methods for an entity -->
 #### Run methods for an entity
@@ -405,7 +404,7 @@ The identity manager supports object as well as customizer methods. The followin
 
 It's also possible to pass certain method parameters if needed. Use ```Parameters``` for that.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Executing scripts within Identity Manager -->
 ### Executing scripts within Identity Manager
@@ -414,7 +413,7 @@ The Identity Manager allows you to execute scripts.
 
     Invoke-IdentityManagerScript -Name 'QBM_GetTempPath'
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Closing the connection -->
 ### Closing the connection
@@ -423,12 +422,12 @@ It's good practice to close any database session after usage.
 
     Remove-IdentityManagerSession
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Advanced usage -->
 ## Advanced usage
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Using of session variables -->
 ### Using of session variables
@@ -451,7 +450,7 @@ If you define a custom session variable, you must remove it again afterward. Oth
     # Remove a variable
     $sessionToUse.Variables.Remove('Variable_1')
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Dealing with multiple database sessions -->
 ### Dealing with multiple database sessions
@@ -462,12 +461,12 @@ The Identity Manager powershell utils allows you to deal with multiple database 
 
 With that, the automatically generated functions will get there prefix as well. E.g.: ```New-Person``` will become ```New-db1Person```.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Contributing -->
 ## Contributing
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- General -->
 ### General
@@ -480,18 +479,18 @@ Contributions are what make the open source community such an amazing place to b
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- Run Pester tests -->
 ### Run Pester tests
 
 Tests can be started by the command: ```Invoke-Pester -Output Detailed```
 
-[:top:](#toc)
+[:top:](#table-of-contents)
 
 <!-- LICENSE -->
 ## License
 
 Distributed under the One Identity - Open Source License. See [LICENSE](LICENSE.md) for more information.
 
-[:top:](#toc)
+[:top:](#table-of-contents)
