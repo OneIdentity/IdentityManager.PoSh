@@ -30,8 +30,10 @@ function Set-Entity {
   Process {
     try {
 
-      # Load object by identity
-      $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
+      if ($null -eq $Entity) {
+        # Load object by identity
+        $Entity = Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity -Entity $Entity
+      }
 
       # Set property values
       foreach($property in $Properties.Keys) {

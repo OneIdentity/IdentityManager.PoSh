@@ -42,6 +42,10 @@ function New-Entity {
         $uow = New-UnitOfWork -Session $sessionToUse
         Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $entity
         Save-UnitOfWork -UnitOfWork $uow
+
+        # Reload the entity to allow further updates
+        $entity = [VI.DB.Entities.Entity]::ReloadAsync($entity, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
+        $entity = Add-EntityMemberExtension -Entity $entity
       }
 
       return $entity

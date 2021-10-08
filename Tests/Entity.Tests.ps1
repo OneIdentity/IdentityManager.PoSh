@@ -18,17 +18,6 @@ Describe 'Entity' {
 
             $p.UID_Person | Should -BeExactly $pCol.UID_Person
         }
-
-        It 'Create a new person' {
-            $randomLastName = [String][System.Guid]::NewGuid()
-            $p = New-Person -FirstName 'Max' -LastName "$randomLastName"
-            $p | Should -Not -BeNullOrEmpty
-
-            $pCol = Get-Entity -Type 'Person' -Filter "Lastname = '$randomLastName'"
-            $pCol.Count | Should -BeExactly 1
-
-            $p.UID_Person | Should -BeExactly $pCol.UID_Person
-        }
     }
 
     Context 'Modify entities' {
