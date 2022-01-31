@@ -3,10 +3,10 @@ This script is a simple helper to handle all operation with the needed product d
 #>
 
 Param (
-    [parameter(Mandatory = $true, HelpMessage = 'The operation mode to use.')]
+    [parameter(Mandatory = $false, HelpMessage = 'The operation mode to use.')]
     [ValidateNotNullOrEmpty()]
-    [ValidateSet('collect','clean')]
-    [string] $OpMode,
+    [ValidateSet('collect','clean', IgnoreCase = $true)]
+    [string] $OpMode = 'clean',
     [parameter(Mandatory = $false, HelpMessage = 'The source directory to use.')]
     [ValidateNotNullOrEmpty()]
     [string] $SrcDir
@@ -135,7 +135,7 @@ function Cleanup {
 
 }
 
-switch ($OpMode) {
+switch ($OpMode.ToLowerInvariant()) {
     'collect' {CollectDeps -SrcDir "${SrcDir}" -TargetDir "${TargetDir}"; break}
     'clean' {Cleanup -TargetDir "${TargetDir}"; break}
     default {CollectDeps; break}
