@@ -134,5 +134,8 @@ function global:Get-$Prefix$funcName() {
   }
 
   End {
+    $Global:getTypedWrapperProviderDone = $true
+    # Make PSScriptAnalyzer happy.
+    $Global:getTypedWrapperProviderDone |Out-Null
   }
 }
