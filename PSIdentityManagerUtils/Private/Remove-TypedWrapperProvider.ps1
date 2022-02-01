@@ -87,5 +87,8 @@ function global:Remove-$Prefix$funcName() {
   }
 
   End {
+    $Global:removeTypedWrapperProviderDone = $true
+    # Make PSScriptAnalyzer happy.
+    $Global:removeTypedWrapperProviderDone |Out-Null
   }
 }

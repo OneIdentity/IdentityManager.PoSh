@@ -46,12 +46,20 @@ function New-IdentityManagerSession {
       # Add session to global session store
       $Global:imsessions.Add($Prefix, @{ Factory = $sessionfactory; Session = $session })
 
-      # Generate type wrapped functions if SkipFunctionGeneration switch is not specified
+      # Generate typed wrapper functions if SkipFunctionGeneration switch is not specified
       if (-not $SkipFunctionGeneration) {
-        New-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-        Get-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-        Remove-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
-        Set-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip | Out-Null
+        if (-not $Global:newTypedWrapperProviderDone) {
+          New-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip
+        }
+        if (-not $Global:getTypedWrapperProviderDone) {
+          Get-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip
+        }
+        if (-not $Global:removeTypedWrapperProviderDone) {
+          Remove-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip
+        }
+        if (-not $Global:setTypedWrapperProviderDone) {
+          Set-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip
+        }
       }
 
       return $session

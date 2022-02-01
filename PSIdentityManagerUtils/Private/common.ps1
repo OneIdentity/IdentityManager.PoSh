@@ -30,6 +30,9 @@ Write-Output "Client version is $clientVersion"
 $Global:OnAssemblyResolve = [System.ResolveEventHandler] {
   param($s, $e)
 
+  # Make PSScriptAnalyzer happy.
+  $s |Out-Null
+
   Write-Debug "(1) ResolveEventHandler: Attempting FullName resolution of $($e.Name) from within the current appdomain." -InformationAction Continue
   foreach ($assembly in [System.AppDomain]::CurrentDomain.GetAssemblies()) {
     if ($assembly.FullName -eq $e.Name) {
@@ -65,7 +68,12 @@ $Global:OnAssemblyResolve = [System.ResolveEventHandler] {
 
 # just for convenience to save typing
 $noneToken = [System.Threading.CancellationToken]::None
+# Make PSScriptAnalyzer happy.
 $noneToken | Out-Null
 
 # initialize global variables
 $Global:imsessions = @{}
+$Global:newTypedWrapperProviderDone = $false
+$Global:getTypedWrapperProviderDone = $false
+$Global:removeTypedWrapperProviderDone = $false
+$Global:setTypedWrapperProviderDone = $false

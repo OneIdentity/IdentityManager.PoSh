@@ -116,5 +116,8 @@ function global:New-$Prefix$funcName() {
   }
 
   End {
+    $Global:newTypedWrapperProviderDone = $true
+    # Make PSScriptAnalyzer happy.
+    $Global:newTypedWrapperProviderDone | Out-Null
   }
 }
