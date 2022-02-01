@@ -41,7 +41,6 @@ function New-IdentityManagerSession {
       [System.AppDomain]::CurrentDomain.remove_AssemblyResolve($Global:OnAssemblyResolve)
 
       $sessionfactory = [VI.DB.DbApp]::ConnectTo($ConnectionString).Using($factory).BuildSessionFactory()
-
       $session = [VI.DB.Sync.SyncSessionFactoryExtensions]::Open($sessionfactory, $AuthenticationString)
 
       # Add session to global session store

@@ -14,11 +14,13 @@
 
     CompanyName = 'One Identity Inc.'
 
-    Copyright = '(c) 2021 One Identity Inc. All rights reserved.'
+    Copyright = '(c) 2022 One Identity Inc. All rights reserved.'
 
     Description = 'Provides functions to interact with the Identity Manager'
 
-    PowerShellVersion = '5.0'
+    PowerShellVersion = '5.1'
+
+    CompatiblePSEditions = @('Desktop')
 
     FunctionsToExport = '*'
 

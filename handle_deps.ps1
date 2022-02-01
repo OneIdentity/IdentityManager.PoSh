@@ -64,7 +64,17 @@ function CollectDeps {
     Write-Output "[+] Target directory: $TargetDir"
 
     Write-Output "Getting file list..."
-    $allFiles = Get-ChildItem -Recurse -Path $SrcDir
+    $excludes = @(
+        'database'
+        'MDK'
+        'autorun'
+        'projects'
+        'documentation'
+    )
+    $excludesRegex = $excludes -join '|'
+    $allFiles = Get-ChildItem -Recurse -File -Path $SrcDir| Where-Object {
+        $_.DirectoryName -notmatch $excludesRegex
+    }
 
     Write-Output "Copying files..."
     $failed=$False

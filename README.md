@@ -82,14 +82,18 @@ A Powershell library for One Identity Manager interaction.
 <!-- Supported Versions -->
 ## Supported Versions
 
-This library is known to work with One Identity Manager version 8.0x and 8.1x.
+This library is known to work with One Identity Manager version 8.0x, 8.1x and 8.2x.
 
 [:top:](#table-of-contents)
 
 <!-- Requirements -->
 ## Requirements
 
-* Windows PowerShell 5.0
+* Windows PowerShell 5.1
+
+:bangbang: Warning
+
+This version is not compatible with Powershell Versions 6 or 7!
 
 The Identity Manager product DLLs
   * By default, the Powershell module with try to load all referenced DLLs from a valid Identity Manager client component installation. This is typically at the default path '```C:\Program Files\One Identity\One Identity Manager```'.

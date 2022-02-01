@@ -30,8 +30,6 @@ Write-Output "Client version is $clientVersion"
 $Global:OnAssemblyResolve = [System.ResolveEventHandler] {
   param($s, $e)
 
-  $s | Out-Null
-
   Write-Debug "(1) ResolveEventHandler: Attempting FullName resolution of $($e.Name) from within the current appdomain." -InformationAction Continue
   foreach ($assembly in [System.AppDomain]::CurrentDomain.GetAssemblies()) {
     if ($assembly.FullName -eq $e.Name) {
