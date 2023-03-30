@@ -6,7 +6,7 @@
 
     RootModule = 'PSIdentityManagerUtils.psm1'
 
-    ModuleVersion = '0.0.10'
+    ModuleVersion = '0.0.11'
 
     Guid = 'a9a73145-c9e6-43c9-8dc9-0ab4831da948'
 
@@ -14,7 +14,7 @@
 
     CompanyName = 'One Identity Inc.'
 
-    Copyright = '(c) 2022 One Identity Inc. All rights reserved.'
+    Copyright = '(c) 2023 One Identity Inc. All rights reserved.'
 
     Description = 'Provides functions to interact with the Identity Manager'
 

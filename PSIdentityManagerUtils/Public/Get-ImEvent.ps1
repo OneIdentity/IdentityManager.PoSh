@@ -41,7 +41,7 @@
       $entityCollection = $src.GetCollectionAsync($query, [VI.DB.Entities.EntityCollectionLoadType]::Slim, $noneToken).GetAwaiter().GetResult()
 
       ForEach ($e in $entityCollection) {
-        Write-Output (Get-EntityColumnValue -Entity $e -Column "EventName")
+        Write-Output (Get-EntityColumnValue -Entity $e -Column 'EventName')
       }
     } catch {
       Resolve-Exception -ExceptionObject $PSitem

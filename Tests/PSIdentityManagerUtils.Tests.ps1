@@ -2,7 +2,7 @@ $ProjectRoot = Resolve-Path "$PSScriptRoot\.."
 $ModuleRoot = Split-Path (Resolve-Path "$ProjectRoot\*\*.psm1")
 $ModuleName = Split-Path $ModuleRoot -Leaf
 
-Describe "General project validation: $ModuleName" -Tag "Compliance" {
+Describe "General project validation: $ModuleName" -Tag 'Compliance' {
     $scripts = Get-ChildItem $ProjectRoot -Include *.ps1,*.psm1,*.psd1 -Recurse
 
     $testCase = $scripts | Foreach-Object{@{file=$_}}
@@ -73,6 +73,7 @@ Describe "$ModuleName ScriptAnalyzer" -Tag 'Compliance' {
                 ScriptName = $_
             }
         }
+
         It "Function <ScriptName> has no ScriptAnalyzer errors" -TestCases $testCase {
             param(
                 $ScriptName

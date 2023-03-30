@@ -82,7 +82,7 @@ A Powershell library for One Identity Manager interaction.
 <!-- Supported Versions -->
 ## Supported Versions
 
-This library is known to work with One Identity Manager version 8.0x, 8.1x and 8.2x.
+This library is known to work with One Identity Manager version 8.0x, 8.1x, 8.2x, 9.0x and 9.1x.
 
 [:top:](#table-of-contents)
 
@@ -343,7 +343,7 @@ It's even possible to modify a loaded entity directly. In the following sample a
     # Modify the last name of that loaded person
     $p1.Lastname = 'Lustiger'
     # Load Accounting department
-    Get-Department -FilterClause "DepartmentName = 'Accounting'"
+    $d1 = Get-Department -FilterClause "DepartmentName = 'Accounting'"
     # Set Accounting department
     $p1.UID_Department = $d1
 

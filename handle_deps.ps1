@@ -59,11 +59,11 @@ function CollectDeps {
         [string] $TargetDir
     )
 
-    Write-Output "Start collection operation"
+    Write-Output 'Start collection operation'
     Write-Output "[+] Source directory: $SrcDir"
     Write-Output "[+] Target directory: $TargetDir"
 
-    Write-Output "Getting file list..."
+    Write-Output 'Getting file list...'
     $excludes = @(
         'database'
         'MDK'
@@ -76,7 +76,7 @@ function CollectDeps {
         $_.DirectoryName -notmatch $excludesRegex
     }
 
-    Write-Output "Copying files..."
+    Write-Output 'Copying files...'
     $failed=$False
     $depFiles | ForEach-Object {
         $searchFile=$_
@@ -92,15 +92,15 @@ function CollectDeps {
         }
         else {
             Write-Output "[!] File or folder '$searchFile' not found in (sub)folder '${SrcDir}'"
-            $failed=$True
+            $failed = $True
         }
     }
 
-    Write-Output "Creating fallback marker files..."
-    $markerDir = Join-Path $TargetDir 'fallback'
+    Write-Output 'Creating fallback marker files...'
+    $markerDir = Join-Path "$TargetDir" 'fallback'
 
-    if ( (Test-Path $markerDir) -eq $False ) {
-        New-Item -Path $markerDir -ItemType Directory > $null
+    if ( -Not Test-Path "$markerDir" ) {
+        New-Item -Path "$markerDir" -ItemType Directory > $null
     }
 
     $fallbackMarkerFiles | ForEach-Object {
@@ -109,15 +109,15 @@ function CollectDeps {
         Write-Output 'Use default' > $marker
     }
 
-    if ( $failed -eq $True ){
-        Write-Output ""
-        Write-Output "WARNING: Found some errors. Thats means some files may not be copied"
+    if ( $failed ){
+        Write-Output ''
+        Write-Output 'WARNING: Found some errors. Thats means some files may not be copied'
         exit 1
     }
     else
     {
-        Write-Output ""
-        Write-Output "--> All files successfully copied <--"
+        Write-Output ''
+        Write-Output '--> All files successfully copied <--'
     }
 }
 
@@ -127,20 +127,20 @@ function Cleanup {
         [string] $TargetDir
     )
 
-    Write-Output "Start cleanup operation"
+    Write-Output 'Start cleanup operation'
     Write-Output "[+] Directory to clean: $TargetDir"
 
     $depFiles | ForEach-Object {
         $searchFile=$_
-        if ( (Test-Path $searchFile) -eq $true ) {
-            Remove-Item -Path $searchFile
+        if ( Test-Path "$searchFile" ) {
+            Remove-Item -Path "$searchFile"
             Write-Output "[+] File or folder '$searchFile' removed"
         }
     }
 
-    $markerDir = Join-Path $TargetDir 'fallback'
-    if ( (Test-Path $markerDir) -eq $true ) {
-        Remove-Item -Path $markerDir -Recurse -Force
+    $markerDir = Join-Path "$TargetDir" 'fallback'
+    if ( Test-Path "$markerDir" ) {
+        Remove-Item -Path "$markerDir" -Recurse -Force
     }
 
 }
