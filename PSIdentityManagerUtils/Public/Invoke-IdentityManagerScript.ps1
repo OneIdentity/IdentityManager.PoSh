@@ -25,13 +25,13 @@
   Process {
     try {
       $scriptEnv = [VI.DB.Entities.SessionExtensions]::Scripts($sessionToUse)
-      $scriptClass = $scriptEnv["Scripts"]
+      $scriptClass = $scriptEnv['Scripts']
       $scriptRunner = New-Object 'VI.DB.Scripting.ScriptRunner' -ArgumentList @($scriptClass, $sessionToUse)
 
       # register events
       $registeredEvents = New-Object System.Collections.ArrayList
-      $registeredEvents.Add((Register-ObjectEvent -InputObject $scriptRunner.Data -EventName "Message" -Action { Write-Output $EventArgs.Text })) | Out-Null
-      $registeredEvents.Add((Register-ObjectEvent -InputObject $scriptRunner.Data -EventName "Progress" -Action { Write-Output $EventArgs.Text })) | Out-Null
+      $registeredEvents.Add((Register-ObjectEvent -InputObject $scriptRunner.Data -EventName 'Message' -Action { Write-Output $EventArgs.Text })) | Out-Null
+      $registeredEvents.Add((Register-ObjectEvent -InputObject $scriptRunner.Data -EventName 'Progress' -Action { Write-Output $EventArgs.Text })) | Out-Null
 
       $result = $null
       try {

@@ -36,7 +36,7 @@ Describe 'Entity' {
 
     Context 'Modify typed wrapper object Person' {
 
-        It "Modify person I" {
+        It 'Modify person I' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Person -FirstName 'Max' -LastName "$randomLastName"
             $pM = Set-Person -Entity $pO -CustomProperty01 'IntegrationTest'
@@ -45,7 +45,7 @@ Describe 'Entity' {
             $pM.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
         }
 
-        It "Modify person II" {
+        It 'Modify person II' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" |Set-Person -CustomProperty01 'IntegrationTest'
             $pV = Get-Person -Lastname "$randomLastName"
@@ -57,7 +57,7 @@ Describe 'Entity' {
 
     Context 'Remove typed wrapper object Person' {
 
-        It "Remove person" {
+        It 'Remove person' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO =  New-Person -FirstName 'Max' -LastName "$randomLastName"
             Remove-Person -Entity $pO -IgnoreDeleteDelay

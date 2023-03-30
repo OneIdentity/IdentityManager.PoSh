@@ -56,7 +56,7 @@ function global:Set-$Prefix$funcName() {
           $paramName = $column.ColumnName
 
           if ($column.IsUid -or $column.IsDynamicFK) {
-            $dateType = "Object"
+            $dateType = 'Object'
           } else {
             $dateType = [VI.Base.DbVal]::GetType($column.Type).Name
           }

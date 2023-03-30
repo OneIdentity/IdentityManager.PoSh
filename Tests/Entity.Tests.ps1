@@ -22,7 +22,7 @@ Describe 'Entity' {
 
     Context 'Modify entities' {
 
-        It "Modify person" {
+        It 'Modify person' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName}
             $pM = Set-Entity -Type 'Person' -Identity ($pO).UID_Person -Properties @{'CustomProperty01' = 'IntegrationTest'}
@@ -35,7 +35,7 @@ Describe 'Entity' {
 
     Context 'Remove entities' {
 
-        It "Remove person" {
+        It 'Remove person' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName}
             Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay

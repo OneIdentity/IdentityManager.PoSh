@@ -13,13 +13,13 @@ function Resolve-Exception {
 
     Process
     {
-      $sst = ""
-      $st = ""
+      $sst = ''
+      $st = ''
       $e = $ExceptionObject.Exception
-      if ($null -ne (Get-Member -InputObject $ExceptionObject -Name "ScriptStackTrace")) {
+      if ($null -ne (Get-Member -InputObject $ExceptionObject -Name 'ScriptStackTrace')) {
         $sst = $ExceptionObject.ScriptStackTrace
       }
-      if ($null -ne (Get-Member -InputObject $ExceptionObject -Name "StackTrace")) {
+      if ($null -ne (Get-Member -InputObject $ExceptionObject -Name 'StackTrace')) {
         $st = $ExceptionObject.StackTrace
       }
 
@@ -28,11 +28,11 @@ function Resolve-Exception {
         $e = $e.InnerException
 
         $msg += "`n" + $e.Message
-        if ($null -ne (Get-Member -InputObject $e -Name "ScriptStackTrace")) {
+        if ($null -ne (Get-Member -InputObject $e -Name 'ScriptStackTrace')) {
           $sst += "`n" + $e.ScriptStackTrace + "`n---"
         }
 
-        if ($null -ne (Get-Member -InputObject $e -Name "StackTrace")) {
+        if ($null -ne (Get-Member -InputObject $e -Name 'StackTrace')) {
           $st += "`n" + $e.StackTrace + "`n---"
         }
       }
