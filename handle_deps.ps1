@@ -77,20 +77,19 @@ function CollectDeps {
     }
 
     Write-Output 'Copying files...'
-    $failed=$False
+    $failed = $False
     $depFiles | ForEach-Object {
-        $searchFile=$_
+        $searchFile = $_
         $file = $allFiles | Where-Object { $_.Name -EQ $searchFile } | Select-Object -First 1
 
         if ( $file ) {
             $exists = Test-Path $file.FullName
         }
 
-        if ( $exists -eq $True ) {
+        if ( $exists ) {
             Copy-Item -Path $file.FullName -Destination $TargetDir -Recurse
             Write-Output "[+] File or folder '$searchFile' copied successfully"
-        }
-        else {
+        } else {
             Write-Output "[!] File or folder '$searchFile' not found in (sub)folder '${SrcDir}'"
             $failed = $True
         }
@@ -99,7 +98,7 @@ function CollectDeps {
     Write-Output 'Creating fallback marker files...'
     $markerDir = Join-Path "$TargetDir" 'fallback'
 
-    if ( -Not Test-Path "$markerDir" ) {
+    if ( -Not (Test-Path "$markerDir") ) {
         New-Item -Path "$markerDir" -ItemType Directory > $null
     }
 
@@ -113,9 +112,7 @@ function CollectDeps {
         Write-Output ''
         Write-Output 'WARNING: Found some errors. Thats means some files may not be copied'
         exit 1
-    }
-    else
-    {
+    } else {
         Write-Output ''
         Write-Output '--> All files successfully copied <--'
     }
@@ -131,7 +128,7 @@ function Cleanup {
     Write-Output "[+] Directory to clean: $TargetDir"
 
     $depFiles | ForEach-Object {
-        $searchFile=$_
+        $searchFile = $_
         if ( Test-Path "$searchFile" ) {
             Remove-Item -Path "$searchFile"
             Write-Output "[+] File or folder '$searchFile' removed"
@@ -142,11 +139,10 @@ function Cleanup {
     if ( Test-Path "$markerDir" ) {
         Remove-Item -Path "$markerDir" -Recurse -Force
     }
-
 }
 
 switch ($OpMode.ToLowerInvariant()) {
     'collect' {CollectDeps -SrcDir "${SrcDir}" -TargetDir "${TargetDir}"; break}
     'clean' {Cleanup -TargetDir "${TargetDir}"; break}
     default {CollectDeps; break}
- }
+}
