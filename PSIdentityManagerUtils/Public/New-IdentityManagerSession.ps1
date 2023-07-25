@@ -62,7 +62,7 @@ function New-IdentityManagerSession {
         }
       }
 
-      return $session
+      $session
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }

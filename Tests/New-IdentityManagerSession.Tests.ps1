@@ -2,7 +2,7 @@
 
 Describe 'New-IdentityManagerSession' {
 
-    It 'Open a new session' {
+    It 'Can open a new session' {
         New-IdentityManagerSession -ConnectionString $Global:connectionString -AuthenticationString $Global:authenticationString -FactoryName $Global:factory -ModulesToSkip $Global:modulesToSkip | Should -Not -Be $null
     }
 

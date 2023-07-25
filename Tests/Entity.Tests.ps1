@@ -7,7 +7,7 @@ Describe 'Entity' {
     }
 
     Context 'Create entities' {
-        It 'Create a new entity' {
+        It 'Can create a new entity' {
 
             $randomLastName = [String][System.Guid]::NewGuid()
             $p = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName}
@@ -22,7 +22,7 @@ Describe 'Entity' {
 
     Context 'Modify entities' {
 
-        It 'Modify person' {
+        It 'Can modify person I' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName}
             $pM = Set-Entity -Type 'Person' -Identity ($pO).UID_Person -Properties @{'CustomProperty01' = 'IntegrationTest'}
@@ -31,11 +31,47 @@ Describe 'Entity' {
             $pM.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
         }
 
+        It 'Can modify person II' {
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName; 'CustomProperty01' = 'IntegrationTest'}
+            $pM = Set-Entity -Type 'Person' -Identity ($pO).UID_Person -Properties @{'CustomProperty01' = 'Test'}
+            $pV = Get-Entity -Type 'Person' -Filter "Lastname = '$randomLastName'"
+
+            $pM.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
+        }
+
+        It 'Can modify person III' {
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName; 'CustomProperty01' = 'IntegrationTest'}
+            $pM = Set-Entity -Type 'Person' -Identity ($pO).UID_Person -Properties @{'CustomProperty01' = ''}
+            $pV = Get-Entity -Type 'Person' -Filter "Lastname = '$randomLastName'"
+
+            $pM.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
+        }
+
+        It 'Can modify person IV' {
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName; 'CustomProperty01' = 'IntegrationTest'}
+            $pM = Set-Entity -Type 'Person' -Identity ($pO).UID_Person -Properties @{'CustomProperty01' = $null}
+            $pV = Get-Entity -Type 'Person' -Filter "Lastname = '$randomLastName'"
+
+            $pM.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
+        }
+
+        It 'Can modify person V' {
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName; 'EntryDate' = [DateTime]::Today.AddDays(-10)}
+            $pM = Set-Entity -Type 'Person' -Identity ($pO).UID_Person -Properties @{'EntryDate' = $null}
+            $pV = Get-Entity -Type 'Person' -Filter "Lastname = '$randomLastName'"
+
+            $pM.EntryDate | Should -BeExactly $pV.EntryDate
+        }
+
     }
 
     Context 'Remove entities' {
 
-        It 'Remove person' {
+        It 'Can remove person' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName}
             Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay

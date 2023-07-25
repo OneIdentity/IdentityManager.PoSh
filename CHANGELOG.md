@@ -1,4 +1,27 @@
 # CHANGELOG
+
+## [0.0.12] - 2023-25-07
+
+### Fixes
+
+- Fix issue #19: Can't set attributes to empty
+
+### Testing
+
+- Add tests for Set-EntityColumnValue
+
+### Miscellaneous
+
+## [0.0.11] - 2023-03-23
+
+### Fixes
+
+- Fix typos
+
+### Testing
+
+### Miscellaneous
+
 ## [0.0.10] - 2021-10-08
 
 ### Fixes

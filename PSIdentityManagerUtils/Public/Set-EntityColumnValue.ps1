@@ -9,9 +9,8 @@ function Set-EntityColumnValue {
     [parameter(Mandatory = $true, HelpMessage = 'The column to update')]
     [ValidateNotNullOrEmpty()]
     [String] $Column,
-    [parameter(Mandatory = $true, HelpMessage = 'The value to set for column')]
-    [ValidateNotNullOrEmpty()]
-    [Object] $Value,
+    [parameter(Mandatory = $false, HelpMessage = 'The value to set for column')]
+    [Object] $Value = $null,
     [parameter(Mandatory = $false, HelpMessage = 'Switch to toggle if the entity should be saved after change')]
     [switch] $WithSave = $false
   )
