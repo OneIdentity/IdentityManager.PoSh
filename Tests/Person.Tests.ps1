@@ -8,7 +8,7 @@ Describe 'Entity' {
 
     Context 'Create typed wrapper object Person' {
 
-        It 'Create a new person I' {
+        It 'Can create a new person I' {
 
             $randomLastName = [String][System.Guid]::NewGuid()
             $p = New-Person -FirstName 'Max' -LastName "$randomLastName"
@@ -20,7 +20,7 @@ Describe 'Entity' {
             $p.UID_Person | Should -BeExactly $pCol.UID_Person
         }
 
-        It 'Create a new person II' {
+        It 'Can create a new person II' {
 
             $randomLastName = [String][System.Guid]::NewGuid()
             $p = New-Person -FirstName 'Max' -LastName "$randomLastName"
@@ -36,7 +36,7 @@ Describe 'Entity' {
 
     Context 'Modify typed wrapper object Person' {
 
-        It 'Modify person I' {
+        It 'Can modify person I' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Person -FirstName 'Max' -LastName "$randomLastName"
             $pM = Set-Person -Entity $pO -CustomProperty01 'IntegrationTest'
@@ -45,9 +45,25 @@ Describe 'Entity' {
             $pM.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
         }
 
-        It 'Modify person II' {
+        It 'Can modify person II' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" |Set-Person -CustomProperty01 'IntegrationTest'
+            $pV = Get-Person -Lastname "$randomLastName"
+
+            $pO.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
+        }
+
+        It 'Can modify person III' {
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" -CustomProperty01 'IntegrationTest' |Set-Person -CustomProperty01 'Test'
+            $pV = Get-Person -Lastname "$randomLastName"
+
+            $pO.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
+        }
+
+        It 'Can modify person IV' {
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" -CustomProperty01 'IntegrationTest' |Set-Person -CustomProperty01 $null
             $pV = Get-Person -Lastname "$randomLastName"
 
             $pO.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
@@ -57,7 +73,7 @@ Describe 'Entity' {
 
     Context 'Remove typed wrapper object Person' {
 
-        It 'Remove person' {
+        It 'Can remove person' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO =  New-Person -FirstName 'Max' -LastName "$randomLastName"
             Remove-Person -Entity $pO -IgnoreDeleteDelay
