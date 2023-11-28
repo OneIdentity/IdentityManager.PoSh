@@ -72,6 +72,7 @@ A Powershell library for One Identity Manager interaction.
     <li><a href="#contributing">Contributing</a>
     <ul>
         <li><a href="#general">General</a></li>
+        <li><a href="#encountering-errors">Encountering errors</a></li>
         <li><a href="#run-pester-tests">Run Pester tests</a></li>
     </ul>
     </li>
@@ -98,7 +99,7 @@ This version is not compatible with Powershell Versions 6 or 7!
 The Identity Manager product DLLs
   * By default, the Powershell module with try to load all referenced DLLs from a valid Identity Manager client component installation. This is typically at the default path '```C:\Program Files\One Identity\One Identity Manager```'.
 
-  * As an alternative method, the referenced DLLs can be placed relative to the Powershell module or you can specify a folder that contains all needed DLLs with paramater ```ProductFilePath```.
+  * As an alternative method, the referenced DLLs can be placed relative to the Powershell module or you can specify a folder that contains all needed DLLs with parameter ```ProductFilePath```.
 
   * For a successful connection through the application server you need the following product DLLs:
 
@@ -500,6 +501,13 @@ Contributions are what make the open source community such an amazing place to b
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+[:top:](#table-of-contents)
+
+<!-- Encountering errors -->
+### Encountering errors
+
+It may happen that errors occur. In this case it's possible to activate debug messages. This can be activated in file ```Private\common.ps1```. Change line three from $DebugPreference = 'SilentlyContinue' to $DebugPreference = 'Continue'. If you open a GitHub issue please add any Debug messages as well.
 
 [:top:](#table-of-contents)
 
