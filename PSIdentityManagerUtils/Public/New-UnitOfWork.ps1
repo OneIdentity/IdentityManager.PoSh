@@ -2,7 +2,15 @@
   [CmdletBinding()]
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]
-    [VI.DB.Entities.ISession] $Session = $null
+    [ValidateScript({
+      try {
+        $_.GetType().ImplementedInterfaces.Contains([type]'VI.DB.Entities.ISession')
+      }
+      catch [System.Management.Automation.PSInvalidCastException] {
+        throw [System.Management.Automation.PSInvalidCastException] 'The given value is not a valid session.'
+      }
+    })]
+    $Session = $null
   )
 
   Begin {

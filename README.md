@@ -82,7 +82,7 @@ A Powershell library for One Identity Manager interaction.
 <!-- Supported Versions -->
 ## Supported Versions
 
-This library is known to work with One Identity Manager version 8.0x, 8.1x, 8.2x, 9.0x and 9.1x.
+This library is known to work with One Identity Manager version 8.0x, 8.1x, 8.2x, 9.0x, 9.1x and 9.2x
 
 [:top:](#table-of-contents)
 
@@ -98,7 +98,9 @@ This version is not compatible with Powershell Versions 6 or 7!
 The Identity Manager product DLLs
   * By default, the Powershell module with try to load all referenced DLLs from a valid Identity Manager client component installation. This is typically at the default path '```C:\Program Files\One Identity\One Identity Manager```'.
 
-  * An alternative method the referenced DLLs can be placed relative to the Powershell module. For a successful connection through the application server you need the following product DLLs:
+  * As an alternative method, the referenced DLLs can be placed relative to the Powershell module or you can specify a folder that contains all needed DLLs with paramater ```ProductFilePath```.
+
+  * For a successful connection through the application server you need the following product DLLs:
 
     * Newtonsoft.Json.dll
     * NLog.dll
@@ -143,7 +145,7 @@ It is recommended to use the Application Server connection!
 <!-- List supported modules for authentication -->
 ### List supported modules for authentication
 
-After the import, a list of supported authentication modules can be shown. You can find more information about authentication modules in the [documentation](https://support.oneidentity.com/de-de/technical-documents/identity-manager/8.1.3/authorization-and-authentication-guide/17#TOPIC-1480519). Later, [a first session](#a-first-session) can be established by choosing one of the supported authentication modules.
+After the import, a list of supported authentication modules can be shown. You can find more information about authentication modules in the [documentation](https://support.oneidentity.com/technical-documents/identity-manager/9.2/authorization-and-authentication-guide/17#TOPIC-2083671). Later, [a first session](#a-first-session) can be established by choosing one of the supported authentication modules.
 
     $connectionString = 'url=https://<URL>/AppServer/'
     $factory = 'QBM.AppServer.Client.ServiceClientFactory'
@@ -158,8 +160,12 @@ After the module is imported, a first connection (session) can be established. A
 
 :bangbang: Warning
 
-The function generation for wrapper functions ("```New-```", "```Get-```", "```Set-```" and "```Remove-```") will be skipped for every disabled table / object type. If an object may have disabled columns, these columns either won't be added as possible parameters.
+The generation for wrapper functions ("```New-```", "```Get-```", "```Set-```" and "```Remove-```") will be skipped for every disabled table / object type. If an object may have disabled columns, these columns either won't be added as possible parameters.
 It may happen that errors occur during the function generation ```Function ... cannot be created because function capacity 4096 has been exceeded for this scope.```. This is a limitation by Powershell. You can workaround this error by skipping the function generation for specific modules by using the parameter ```-ModulesToSkip``` during the call of ```New-IdentityManagerSession```. An alternative for that is overwriting the limitation for the maximum function capacity by setting a new value like ```$MaximumFunctionCount = 10000``` just before you import the PSIdentityManagerUtils module.
+
+As opposite, there is a parameter called ```ModulesToAdd``` that only adds the corresponding wrapper functions that belongs to the list of given modules.
+
+To completly disable the wrapper function generation use ```SkipFunctionGeneration```.
 
 [:top:](#table-of-contents)
 
@@ -448,7 +454,7 @@ It's good practice to close any database session after usage.
 <!-- Using of session variables -->
 ### Using of session variables
 
-Within Identity Manager the usage of session based variables is supported. You can find more information in the [documentation](https://support.oneidentity.com/de-de/technical-documents/identity-manager/8.1.3/configuration-guide/71#TOPIC-1481129).
+Within Identity Manager the usage of session based variables is supported. You can find more information in the [documentation](https://support.oneidentity.com/technical-documents/identity-manager/9.2/configuration-guide/75#TOPIC-2084187).
 
 :warning: Hint
 

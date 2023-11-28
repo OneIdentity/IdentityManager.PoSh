@@ -6,7 +6,7 @@ Describe "General project validation: $ModuleName" -Tag 'Compliance' {
     $scripts = Get-ChildItem $ProjectRoot -Include *.ps1,*.psm1,*.psd1 -Recurse
 
     $testCase = $scripts | Foreach-Object{@{file=$_}}
-    It "Script <file> should be valid powershell" -TestCases $testCase {
+    It 'Script <file> should be valid powershell' -TestCases $testCase {
         param($file)
 
         $file.fullname | Should -Exist
@@ -52,7 +52,7 @@ Describe "$ModuleName ScriptAnalyzer" -Tag 'Compliance' {
 
         $FunctionsWithoutErrors = Compare-Object -ReferenceObject $AllFunctions -DifferenceObject $FunctionsWithErrors | Select-Object -ExpandProperty InputObject
         Context 'ScriptAnalyzer Testing' {
-            It "Function <ScriptName> should not use <Message> on line <Line> (Rule: <RuleName>)" -TestCases $testCase {
+            It 'Function <ScriptName> should not use <Message> on line <Line> (Rule: <RuleName>)' -TestCases $testCase {
                 param(
                     $RuleName,
                     $ScriptName,
@@ -74,7 +74,7 @@ Describe "$ModuleName ScriptAnalyzer" -Tag 'Compliance' {
             }
         }
 
-        It "Function <ScriptName> has no ScriptAnalyzer errors" -TestCases $testCase {
+        It 'Function <ScriptName> has no ScriptAnalyzer errors' -TestCases $testCase {
             param(
                 $ScriptName
             )

@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [0.0.12] - 2023-25-07
+## [0.0.13] - 2023-11-28
+
+### Fixes
+
+- Fix issue #22: How to deal with multiple DB's in different versions
+- Fix issue #23: Cant create application server connection
+
+### Testing
+
+- Add more tests for New-IdentityManagerSession
+- Minor cleanup
+
+### Miscellaneous
+
+- Minor cleanup
+- Introduce new parameter ModulesToAdd to New-IdentityManagerSession and wrapper functions to control function creation
+- Introduce new parameter ProductFilePath to Get-Authentifier and New-IdentityManagerSession to allow specification of assembly path
+
+## [0.0.12] - 2023-07-25
 
 ### Fixes
 

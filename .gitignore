@@ -1,3 +1,5 @@
 *.dll
 .vscode
 fallback
+IdentityManager.Posh.CodeCoverage.xml
+IdentityManager.Posh.TestResult.xml

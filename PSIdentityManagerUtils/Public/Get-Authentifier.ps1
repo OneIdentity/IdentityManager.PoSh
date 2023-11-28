@@ -1,46 +1,60 @@
 function Get-Authentifier {
-    [CmdletBinding()]
-    Param (
-        [parameter(Mandatory = $true, HelpMessage = 'Connectionstring to an Identity Manager database')]
-        [ValidateNotNullOrEmpty()]
-        [String] $ConnectionString,
-        [Parameter(Mandatory = $false, HelpMessage = 'The connection factory to use')]
-        [ValidateSet('VI.DB.ViSqlFactory', 'VI.DB.Oracle.ViOracleFactory', 'QBM.AppServer.Client.ServiceClientFactory')]
-        [String] $FactoryName = 'VI.DB.ViSqlFactory',
-        [Parameter(Mandatory = $false, HelpMessage = 'The product to query for authentication methods')]
-        [ValidateSet('API Designer', 'Application Server', 'Default', 'Designer', 'LaunchPad', 'Manager', 'OperationsSupportWebPortal', 'PasswordReset', 'SOAP Service', 'SPML Service', 'WebDesigner', 'WebDesignerEditor')]
-        [String] $Product = 'Manager'
-    )
+  [CmdletBinding()]
+  Param (
+    [parameter(Mandatory = $true, Position = 0, HelpMessage = 'Connectionstring to an Identity Manager database')]
+    [ValidateNotNullOrEmpty()]
+    [String] $ConnectionString,
+    [Parameter(Mandatory = $false, HelpMessage = 'The connection factory to use')]
+    [ValidateSet('VI.DB.ViSqlFactory', 'VI.DB.Oracle.ViOracleFactory', 'QBM.AppServer.Client.ServiceClientFactory')]
+    [String] $FactoryName = 'VI.DB.ViSqlFactory',
+    [parameter(Mandatory = $false, HelpMessage = 'The base path to load the Identity Manager product files from.')]
+    [string] $ProductFilePath = $null,
+    [Parameter(Mandatory = $false, HelpMessage = 'The product to query for authentication methods')]
+    [ValidateSet('API Designer', 'Application Server', 'Default', 'Designer', 'LaunchPad', 'Manager', 'OperationsSupportWebPortal', 'PasswordReset', 'SOAP Service', 'SPML Service', 'WebDesigner', 'WebDesignerEditor')]
+    [String] $Product = 'Manager'
+  )
   
-    Begin {
+  Begin {
+    # make sure our exception handler function is loaded
+    if (-not (Get-Command 'Resolve-Exception' -errorAction SilentlyContinue)) {
+      . (Join-Path "$PSScriptRoot".Replace('Public', 'Private') 'common.ps1')
     }
 
-    Process {
-        try {
-            if ($FactoryName -eq 'QBM.AppServer.Client.ServiceClientFactory') {
-                [System.AppDomain]::CurrentDomain.add_AssemblyResolve($Global:OnAssemblyResolve)
-                [System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, 'QBM.AppServer.Client.dll')) | Out-Null
-            }
+    # Load product files
+    Add-IdentityManagerProductFile "$ProductFilePath"
+  }
 
-            $factory = New-Object -TypeName $FactoryName
+  Process {
+    try {
+      if ($FactoryName -eq 'QBM.AppServer.Client.ServiceClientFactory') {
+        [System.AppDomain]::CurrentDomain.add_AssemblyResolve($Global:OnAssemblyResolve)
+        [System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, 'QBM.AppServer.Client.dll')) | Out-Null
+      }
 
-            # We have to deregister the event handler here otherwise the powershell get's a stackoverflow
-            [System.AppDomain]::CurrentDomain.remove_AssemblyResolve($Global:OnAssemblyResolve)
+      $factory = New-Object -TypeName $FactoryName
 
-            $sessionfactory = [VI.DB.DbApp]::ConnectTo($ConnectionString).Using($factory).BuildSessionFactory()
+      # We have to deregister the event handler here otherwise the powershell get's a stackoverflow
+      [System.AppDomain]::CurrentDomain.remove_AssemblyResolve($Global:OnAssemblyResolve)
 
-            $resolve = $sessionfactory.CommonServices.GetType().GetMethod('Resolve')
-            $authmoduleInfoSourceInterface = $resolve.MakeGenericMethod([VI.DB.Auth.IAuthModuleInfoSource])
-            $authmoduleInfoSource = $authmoduleInfoSourceInterface.Invoke($sessionfactory.CommonServices, @())
-            $modules = $authmoduleInfoSource.GetUIAuthentifiersAsync($Product, $noneToken).GetAwaiter().GetResult() | Select-Object Caption, Ident
+      $sessionfactory = [VI.DB.DbApp]::ConnectTo($ConnectionString).Using($factory).BuildSessionFactory()
 
-            Write-Output $modules
-        } catch {
-            Resolve-Exception -ExceptionObject $PSitem
-        }
+      $resolve = $sessionfactory.CommonServices.GetType().GetMethod('Resolve')
+      $authmoduleInfoSourceInterface = $resolve.MakeGenericMethod([VI.DB.Auth.IAuthModuleInfoSource])
+      $authmoduleInfoSource = $authmoduleInfoSourceInterface.Invoke($sessionfactory.CommonServices, @())
+      $modules = $authmoduleInfoSource.GetUIAuthentifiersAsync($Product, $noneToken).GetAwaiter().GetResult() | Select-Object Caption, Ident
+
+      Write-Output $modules
+
+      if ($null -ne $sessionfactory) {
+        $sessionfactory.Dispose()
+      }
     }
-
-    End {
+    catch {
+      Resolve-Exception -ExceptionObject $PSitem
     }
+  }
+
+  End {
+  }
 }
 

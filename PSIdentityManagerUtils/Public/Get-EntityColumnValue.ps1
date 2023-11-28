@@ -14,7 +14,8 @@ function Get-EntityColumnValue {
 
   Process {
     try {
-      ($Entity).GetValue($Column).Value
+      $val = ($Entity).GetValue($Column).Value
+      $val
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }
