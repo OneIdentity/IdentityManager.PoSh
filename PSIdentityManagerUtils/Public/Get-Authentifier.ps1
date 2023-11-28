@@ -21,7 +21,7 @@ function Get-Authentifier {
     }
 
     # Load product files
-    Add-IdentityManagerProductFile "$ProductFilePath"
+    $oneImBasePath = Add-IdentityManagerProductFile "$ProductFilePath"
   }
 
   Process {

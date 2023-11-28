@@ -29,7 +29,7 @@ function New-IdentityManagerSession {
     }
 
     # Load product files
-    Add-IdentityManagerProductFile "$ProductFilePath"
+    $oneImBasePath = Add-IdentityManagerProductFile "$ProductFilePath"
   }
 
   Process {
