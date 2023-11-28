@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.0.15] - 2023-11-28
+
+### Fixes
+
+### Testing
+
+### Miscellaneous
+
+- Turn off debug messages and add hint into README.md
+
 ## [0.0.14] - 2023-11-28
 
 ### Fixes

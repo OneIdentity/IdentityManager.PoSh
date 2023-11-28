@@ -1,6 +1,6 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$DebugPreference = 'Continue' # or 'SilentlyContinue'
+$DebugPreference = 'SilentlyContinue' # Valid values are 'SilentlyContinue' -> Don't show any debug messages; Continue -> Show debug messages.
 
 function Resolve-Exception {
   [CmdletBinding()]
