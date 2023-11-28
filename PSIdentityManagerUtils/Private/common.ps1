@@ -125,6 +125,8 @@ function Add-IdentityManagerProductFile {
   }
 
   Add-FileToAppDomain -BasePath $oneImBasePath -File $VIDB
+
+  $oneImBasePath
 }
 
 $Global:OnAssemblyResolve = [System.ResolveEventHandler] {
