@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.0.14] - 2023-11-28
+
+### Fixes
+
+- Hotfix for missing variable assignment in v0.0.13
+
+### Testing
+
+### Miscellaneous
+
 ## [0.0.13] - 2023-11-28
 
 ### Fixes
