@@ -3,12 +3,17 @@
 Describe 'Entity' {
 
     BeforeAll {
-        New-IdentityManagerSession -ConnectionString $Global:connectionString -AuthenticationString $Global:authenticationString -FactoryName $Global:factory -ModulesToSkip $Global:modulesToSkip
+        New-IdentityManagerSession  `
+            -ConnectionString $Global:connectionString `
+            -AuthenticationString $Global:authenticationString `
+            -FactoryName $Global:factory `
+            -ProductFilePath $Global:ProductFilePath `
+            -ModulesToAdd $Global:modulesToAdd
     }
 
     Context 'Create typed wrapper object Person' {
 
-        It 'Can create a new person I' {
+        It 'Can create a person' {
 
             $randomLastName = [String][System.Guid]::NewGuid()
             $p = New-Person -FirstName 'Max' -LastName "$randomLastName"
@@ -20,7 +25,7 @@ Describe 'Entity' {
             $p.UID_Person | Should -BeExactly $pCol.UID_Person
         }
 
-        It 'Can create a new person II' {
+        It 'Can create another person' {
 
             $randomLastName = [String][System.Guid]::NewGuid()
             $p = New-Person -FirstName 'Max' -LastName "$randomLastName"
@@ -36,7 +41,7 @@ Describe 'Entity' {
 
     Context 'Modify typed wrapper object Person' {
 
-        It 'Can modify person I' {
+        It 'Can modify person' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Person -FirstName 'Max' -LastName "$randomLastName"
             $pM = Set-Person -Entity $pO -CustomProperty01 'IntegrationTest'
@@ -45,7 +50,7 @@ Describe 'Entity' {
             $pM.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
         }
 
-        It 'Can modify person II' {
+        It 'Can modify person by pipeline' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" |Set-Person -CustomProperty01 'IntegrationTest'
             $pV = Get-Person -Lastname "$randomLastName"
@@ -53,7 +58,7 @@ Describe 'Entity' {
             $pO.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
         }
 
-        It 'Can modify person III' {
+        It 'Can modify person by pipeline with overwrite' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" -CustomProperty01 'IntegrationTest' |Set-Person -CustomProperty01 'Test'
             $pV = Get-Person -Lastname "$randomLastName"
@@ -61,7 +66,7 @@ Describe 'Entity' {
             $pO.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
         }
 
-        It 'Can modify person IV' {
+        It 'Can modify person by pipeline with reset' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" -CustomProperty01 'IntegrationTest' |Set-Person -CustomProperty01 $null
             $pV = Get-Person -Lastname "$randomLastName"

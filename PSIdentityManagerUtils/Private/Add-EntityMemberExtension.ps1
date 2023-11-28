@@ -1,7 +1,7 @@
 ﻿function Add-EntityMemberExtension {
   [CmdletBinding()]
   Param (
-    [parameter(Mandatory = $false, ValueFromPipeline=$true, HelpMessage = 'The entity to extend')]
+    [parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, HelpMessage = 'The entity to extend')]
     [VI.DB.Entities.IEntity] $Entity = $null
   )
 

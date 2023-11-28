@@ -2,7 +2,15 @@ function Get-Entity {
   [CmdletBinding()]
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]
-    [VI.DB.Entities.ISession] $Session = $null,
+    [ValidateScript({
+      try {
+        $_.GetType().ImplementedInterfaces.Contains([type]'VI.DB.Entities.ISession')
+      }
+      catch [System.Management.Automation.PSInvalidCastException] {
+        throw [System.Management.Automation.PSInvalidCastException] 'The given value is not a valid session.'
+      }
+    })]
+    $Session = $null,
     [parameter(Mandatory = $false, HelpMessage = "The tablename of the object to load. This is only needed in case you don't use an XObjectKey")]
     [string] $Type,
     [parameter(Mandatory = $false, HelpMessage = 'Load object by UID or XObjectKey')]

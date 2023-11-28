@@ -31,7 +31,7 @@ function Get-EntityByIdentity {
       if ($null -eq $Entity) {
         # If there is no entity check identity  is not null
         if ([System.String]::IsNullOrEmpty($Identity)) {
-          Throw 'Identity parameter must be specified when loading an object.'
+          throw 'Identity parameter must be specified when loading an object.'
         }
 
         # Load Object by UID or XObjectKey
@@ -42,7 +42,7 @@ function Get-EntityByIdentity {
         } else {
           # Check if type was specified and is not null
           if ([System.String]::IsNullOrEmpty($Type)) {
-            Throw 'Type parameter must be specified when loading an object via UID.'
+            throw 'Type parameter must be specified when loading an object via UID.'
           }
 
           # Load with UID

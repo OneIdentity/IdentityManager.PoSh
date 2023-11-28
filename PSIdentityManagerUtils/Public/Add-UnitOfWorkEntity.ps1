@@ -1,7 +1,7 @@
 ﻿function Add-UnitOfWorkEntity {
   [CmdletBinding()]
   Param (
-    [parameter(Mandatory = $true, HelpMessage = 'The unit of work to use for set operation')]
+    [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The unit of work to use for set operation')]
     [ValidateNotNull()]
     [VI.DB.Entities.IUnitOfWork] $UnitOfWork,
     [parameter(Mandatory = $true, HelpMessage = 'The entity to put')]

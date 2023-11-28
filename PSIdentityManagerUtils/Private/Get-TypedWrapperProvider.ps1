@@ -7,7 +7,9 @@
     [Parameter(Mandatory = $false, HelpMessage = 'Cmdlet prefix to use for handling multiple connections')]
     [String] $Prefix = '',
     [Parameter(Mandatory = $false, HelpMessage = 'List of modules to skip for function generation')]
-    [String[]] $ModulesToSkip
+    [String[]] $ModulesToSkip,
+    [Parameter(Mandatory = $false, HelpMessage = 'List of modules to add for function generation')]
+    [String[]] $ModulesToAdd
   )
 
   Begin {
@@ -20,7 +22,11 @@
       $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($Session)
       if ($null -eq $ModulesToSkip)
       {
-        $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated }
+        if ($null -eq $ModulesToAdd) {
+          $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated }
+        } else {
+          $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated -And ($ModulesToAdd.Contains($_.Uid.Substring(0, 3))) }
+        }
       } else {
         $tables = $metaData.GetTablesAsync($noneToken).GetAwaiter().GetResult() | Where-Object { -not $_.IsDeactivated -And (-not $ModulesToSkip.Contains($_.Uid.Substring(0, 3))) }
       }

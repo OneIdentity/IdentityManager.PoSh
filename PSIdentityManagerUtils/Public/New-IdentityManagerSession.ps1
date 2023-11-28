@@ -10,15 +10,26 @@ function New-IdentityManagerSession {
     [Parameter(Mandatory = $false, HelpMessage = 'The connection factory to use')]
     [ValidateSet('VI.DB.ViSqlFactory', 'VI.DB.Oracle.ViOracleFactory', 'QBM.AppServer.Client.ServiceClientFactory')]
     [String] $FactoryName = 'VI.DB.ViSqlFactory',
+    [parameter(Mandatory = $false, HelpMessage = 'The base path to load the Identity Manager product files from.')]
+    [string] $ProductFilePath,
     [Parameter(Mandatory = $false, HelpMessage = 'Cmdlet prefix to use for handling multiple connections')]
     [String] $Prefix = '',
     [Parameter(Mandatory = $false, HelpMessage = 'List of modules to skip for function generation')]
     [String[]] $ModulesToSkip,
+    [Parameter(Mandatory = $false, HelpMessage = 'List of modules to add for function generation')]
+    [String[]] $ModulesToAdd,
     [Parameter(Mandatory = $false, HelpMessage = 'If the switch is specified the type wrapper functions will not be created (e.g. New-Person, New-ADSAccount)')]
     [switch] $SkipFunctionGeneration = $false
   )
 
   Begin {
+    # make sure our exception handler function is loaded
+    if (-not (Get-Command 'Resolve-Exception' -errorAction SilentlyContinue)) {
+      . (Join-Path "$PSScriptRoot".Replace('Public', 'Private') 'common.ps1')
+    }
+
+    # Load product files
+    Add-IdentityManagerProductFile "$ProductFilePath"
   }
 
   Process {
@@ -49,16 +60,16 @@ function New-IdentityManagerSession {
       # Generate typed wrapper functions if SkipFunctionGeneration switch is not specified
       if (-not $SkipFunctionGeneration) {
         if (-not $Global:newTypedWrapperProviderDone) {
-          New-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip
+          New-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip -ModulesToAdd $ModulesToAdd
         }
         if (-not $Global:getTypedWrapperProviderDone) {
-          Get-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip
+          Get-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip -ModulesToAdd $ModulesToAdd
         }
         if (-not $Global:removeTypedWrapperProviderDone) {
-          Remove-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip
+          Remove-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip -ModulesToAdd $ModulesToAdd
         }
         if (-not $Global:setTypedWrapperProviderDone) {
-          Set-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip
+          Set-TypedWrapperProvider -Session $session -Prefix $Prefix -ModulesToSkip $ModulesToSkip -ModulesToAdd $ModulesToAdd
         }
       }
 
