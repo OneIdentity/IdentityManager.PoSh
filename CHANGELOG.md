@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.0.16] - 2024-04-10
+
+### Fixes
+
+- Fix issues with duplicate session closing
+
+### Testing
+
+- Add some performance tests
+
+### Miscellaneous
+
+- Fix some typos
+- Improve bulk operations
+
 ## [0.0.15] - 2023-11-28
 
 ### Fixes

@@ -88,6 +88,7 @@ Describe 'Entity' {
     }
 
     AfterAll {
+        Get-Entity -Type 'Person' | Remove-Entity -IgnoreDeleteDelay |Out-Null
         Remove-IdentityManagerSession
     }
 

@@ -9,7 +9,9 @@ function Resolve-Exception {
     [ValidateNotNull()]
     [Object] $ExceptionObject,
     [parameter(Mandatory = $false, HelpMessage = 'Toogle stacktrace output')]
-    [switch] $HideStackTrace = $false
+    [switch] $HideStackTrace = $false,
+    [parameter(Mandatory = $false, HelpMessage = 'The error action to use')]
+    [String] $CustomErrorAction = 'Stop'
   )
 
   Begin {
@@ -22,7 +24,6 @@ function Resolve-Exception {
 
     if (-Not ($ExceptionObject.PSObject.Properties.Name -contains 'Exception')) {
       # Do not proceed on any non Exception object
-
       Write-Warning -Message "No Exception object."
       return
     }
@@ -53,7 +54,7 @@ function Resolve-Exception {
       $msg += "`n---[ScriptStackTrace]---`n" + $sst + "`n---[StackTrace]---`n" + $st
     }
 
-    Write-Error -Message $msg -ErrorAction Stop
+    Write-Error -Message $msg -ErrorAction $CustomErrorAction
   }
 
   End {
@@ -63,42 +64,42 @@ function Resolve-Exception {
 function Add-FileToAppDomain {
   [CmdletBinding()]
   param (
-      [parameter(Mandatory = $true, HelpMessage = 'The base path to load files from.')]
-      [ValidateNotNull()]
-      [string] $BasePath,
-      [parameter(Mandatory = $true, HelpMessage = 'The file to load into the AppDomain.')]
-      [ValidateNotNull()]
-      [string] $File
+    [parameter(Mandatory = $true, HelpMessage = 'The base path to load files from.')]
+    [ValidateNotNull()]
+    [string] $BasePath,
+    [parameter(Mandatory = $true, HelpMessage = 'The file to load into the AppDomain.')]
+    [ValidateNotNull()]
+    [string] $File
   )
 
   if (-not (Test-Path "$BasePath" -PathType Container))
   {
-      throw "[!] Can't find or access folder ${BasePath}."
+    throw "[!] Can't find or access folder ${BasePath}."
   }
 
   $FileToLoad = Join-Path "${BasePath}" "$File"
 
   if (-not (Test-Path "$FileToLoad" -PathType Leaf))
   {
-      throw "[!] Can't find or access file ${FileToLoad}."
+    throw "[!] Can't find or access file ${FileToLoad}."
   }
 
   if (-not ([appdomain]::currentdomain.getassemblies() |Where-Object Location -Like ${FileToLoad})) {
-      try {
-          [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
-          $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
-          Write-Debug "[+] File ${File} loaded with version ${clientVersion} from ${BasePath}."
-      } catch {
-          Resolve-Exception -ExceptionObject $PSitem
-      }
+    try {
+      [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
+      $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
+      Write-Debug "[+] File ${File} loaded with version ${clientVersion} from ${BasePath}."
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
+    }
   }
 }
 
 function Add-IdentityManagerProductFile {
   [CmdletBinding()]
   param (
-      [parameter(Mandatory = $false, Position = 0, HelpMessage = 'The base path to load files from.')]
-      [string] $BasePath = $null
+    [parameter(Mandatory = $false, Position = 0, HelpMessage = 'The base path to load files from.')]
+    [string] $BasePath = $null
   )
 
   $VIDB = 'VI.DB.dll'

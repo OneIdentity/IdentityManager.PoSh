@@ -26,7 +26,9 @@ function Remove-IdentityManagerSession {
 
       if ($null -ne $Session) {
         $foundPrefix = $Global:imsessions.Keys | Where-Object { $Global:imsessions[$_].Session -eq $Session }
-        $entry = $Global:imsessions[$foundPrefix]
+        if ($null -ne $foundPrefix) {
+          $entry = $Global:imsessions[$foundPrefix]
+        }
       } elseif ($Global:imsessions.Contains($Prefix)) {
         $foundPrefix = $Prefix
         $entry = $Global:imsessions[$Prefix]
@@ -41,7 +43,9 @@ function Remove-IdentityManagerSession {
           $entry.Factory.Dispose()
         }
 
-        $Global:imsessions.Remove($foundPrefix)
+        if ($null -ne $foundPrefix) {
+          $Global:imsessions.Remove($foundPrefix)
+        }
       }
     } catch {
       Resolve-Exception -ExceptionObject $PSitem

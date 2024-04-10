@@ -50,6 +50,8 @@ function global:Set-$Prefix$funcName() {
     [VI.DB.Entities.IEntity] `$Entity = `$null,
     [parameter(Mandatory = `$false, HelpMessage = 'Load object by UID or XObjectKey')]
     [string] `$Identity,
+    [parameter(Mandatory = `$false, HelpMessage = 'If the unsaved switch is specified the entity will not be automatically saved to the database. Intended for bulk operations.')]
+    [switch] `$Unsaved = `$false,
 "@
 
         $cols = new-object string[] 0
@@ -109,7 +111,11 @@ function global:Set-$Prefix$funcName() {
         }
       }
 
-      Set-Entity -Session `$session -Entity `$Entity -Type '$funcName' -Identity `$Identity -Properties `$properties
+      if (`$Unsaved) {
+        Set-Entity -Session `$session -Entity `$Entity -Type '$funcName' -Identity `$Identity -Properties `$properties -Unsaved
+      } else {
+        Set-Entity -Session `$session -Entity `$Entity -Type '$funcName' -Identity `$Identity -Properties `$properties
+      }
     } catch {
       Resolve-Exception -ExceptionObject `$PSitem
     }

@@ -46,6 +46,8 @@
         $funcTemplateHeader = @"
 function global:New-$Prefix$funcName() {
   Param (
+    [parameter(Mandatory = `$false, HelpMessage = 'If the unsaved switch is specified the entity will not be automatically saved to the database. Intended for bulk operations.')]
+    [switch] `$Unsaved = `$false,
 "@
 
         $cols = new-object string[] 0
@@ -101,7 +103,11 @@ function global:New-$Prefix$funcName() {
         }
       }
 
-      New-Entity -Session `$session -Type '$funcName' -Properties `$properties
+      if (`$Unsaved) {
+        New-Entity -Session `$session -Type '$funcName' -Properties `$properties -Unsaved
+      } else {
+        New-Entity -Session `$session -Type '$funcName' -Properties `$properties
+      }
     } catch {
       Resolve-Exception -ExceptionObject `$PSitem
     }

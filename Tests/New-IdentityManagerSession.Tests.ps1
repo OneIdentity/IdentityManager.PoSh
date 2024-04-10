@@ -86,6 +86,35 @@ Describe 'New-IdentityManagerSession' {
             $Global:imsessions.Count | Should -Be 0
         }
 
+        It 'Can open and close a session' {
+            $sess = New-IdentityManagerSession `
+                -ConnectionString $Global:connectionString `
+                -AuthenticationString $Global:authenticationString `
+                -FactoryName $Global:factory `
+                -ProductFilePath $Global:ProductFilePath `
+                -SkipFunctionGeneration
+            $sess | Should -Not -BeNullOrEmpty
+            $Global:imsessions.Count | Should -Be 1
+
+            { Remove-IdentityManagerSession -Session $sess } | Should -Not -Throw
+            $Global:imsessions.Count | Should -Be 0
+        }
+
+        It 'Can open and close a session twice' {
+            $sess = New-IdentityManagerSession `
+                -ConnectionString $Global:connectionString `
+                -AuthenticationString $Global:authenticationString `
+                -FactoryName $Global:factory `
+                -ProductFilePath $Global:ProductFilePath `
+                -SkipFunctionGeneration
+            $sess | Should -Not -BeNullOrEmpty
+            $Global:imsessions.Count | Should -Be 1
+
+            { Remove-IdentityManagerSession -Session $sess } | Should -Not -Throw
+            { Remove-IdentityManagerSession -Session $sess } | Should -Not -Throw
+            $Global:imsessions.Count | Should -Be 0
+        }
+
     }
 
     Context 'Multiple sessions' {

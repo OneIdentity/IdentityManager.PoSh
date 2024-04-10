@@ -18,9 +18,7 @@ function Set-EntityColumnValue {
     [ValidateNotNullOrEmpty()]
     [String] $Column,
     [parameter(Mandatory = $false, HelpMessage = 'The value to set for column')]
-    [Object] $Value = $null,
-    [parameter(Mandatory = $false, HelpMessage = 'Switch to toggle if the entity should be saved after change')]
-    [switch] $WithSave = $false
+    [Object] $Value = $null
   )
 
   Begin {
@@ -62,12 +60,6 @@ function Set-EntityColumnValue {
       }
 
       ($Entity).PutValueAsync($Column, $valueToSet, $noneToken).GetAwaiter().GetResult() | Out-Null
-
-      if ($WithSave) {
-        $uow = New-UnitOfWork -Session $sessionToUse
-        Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $Entity
-        Save-UnitOfWork -UnitOfWork $uow
-      }
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }
