@@ -23,7 +23,7 @@
           # We have to generate the scripts as string so the column name gets in the string as value instead of a variable.
           Add-Member -InputObject $Entity -MemberType ScriptProperty -Name $columnName `
             -Value (&([Scriptblock]::Create("{Get-EntityColumnValue -Entity `$this -Column '$columnName'}"))) `
-            -SecondValue (&([Scriptblock]::Create("{param(`$value) Set-EntityColumnValue -Entity `$this -Column '$columnName' -Value `$value -WithSave}")))
+            -SecondValue (&([Scriptblock]::Create("{param(`$value) Set-EntityColumnValue -Entity `$this -Column '$columnName' -Value `$value}")))
         }
       }
 

@@ -42,7 +42,7 @@ function New-Entity {
 
       # Set property values
       foreach($property in $Properties.Keys) {
-        Set-EntityColumnValue -Entity $entity -Column $property -Value $Properties[$property]
+        Set-EntityColumnValue -Entity $Entity -Column $property -Value $Properties[$property]
       }
 
       # Save entity via UnitOfWork to Database

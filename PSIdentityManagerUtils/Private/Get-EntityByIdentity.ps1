@@ -29,7 +29,7 @@ function Get-EntityByIdentity {
 
       # Convenience: If user already specified an entity then use it
       if ($null -eq $Entity) {
-        # If there is no entity check identity  is not null
+        # If there is no entity check identity is not null
         if ([System.String]::IsNullOrEmpty($Identity)) {
           throw 'Identity parameter must be specified when loading an object.'
         }
