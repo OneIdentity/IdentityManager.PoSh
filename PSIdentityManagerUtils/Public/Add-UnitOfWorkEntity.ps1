@@ -4,7 +4,7 @@
     [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The unit of work to use for set operation')]
     [ValidateNotNull()]
     [VI.DB.Entities.IUnitOfWork] $UnitOfWork,
-    [parameter(Mandatory = $true, HelpMessage = 'The entity to put')]
+    [parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true, HelpMessage = 'The entity to put')]
     [ValidateNotNull()]
     [VI.DB.Entities.IEntity] $Entity
   )

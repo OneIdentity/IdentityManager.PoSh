@@ -1,7 +1,7 @@
 ﻿function Save-UnitOfWork {
   [CmdletBinding()]
   Param (
-    [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The unit of work to commit')]
+    [parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, HelpMessage = 'The unit of work to commit')]
     [ValidateNotNull()]
     [VI.DB.Entities.IUnitOfWork] $UnitOfWork
   )

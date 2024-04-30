@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.0.17] - 2024-04-30
+
+### Fixes
+
+- Fix reloading of entities
+
+### Testing
+
+### Miscellaneous
+
+- Add contribute script to populate a database with some fake data
+
 ## [0.0.16] - 2024-04-10
 
 ### Fixes
