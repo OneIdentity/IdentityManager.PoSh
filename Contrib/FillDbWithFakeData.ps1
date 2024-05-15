@@ -63,7 +63,7 @@ function Resolve-Exception {
 
 $Session = New-IdentityManagerSession `
 -ConnectionString $ConectionString `
--AuthenticationString $Global:authenticationString `
+-AuthenticationString $AuthenticationString `
 -ProductFilePath $ProductFilePath `
 -ModulesToAdd $ModulesToAdd
 
