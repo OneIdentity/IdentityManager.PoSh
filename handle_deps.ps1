@@ -72,7 +72,7 @@ function CollectDeps {
         'documentation'
     )
     $excludesRegex = $excludes -join '|'
-    $allFiles = Get-ChildItem -Recurse -File -Path $SrcDir| Where-Object {
+    $allFiles = Get-ChildItem -Recurse -File -Path $SrcDir | Where-Object {
         $_.DirectoryName -notmatch $excludesRegex
     }
 

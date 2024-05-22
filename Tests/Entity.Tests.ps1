@@ -142,11 +142,11 @@ Describe 'Entity' {
         }
 
         It 'Get count with valid filter' {
-            Get-TableCount -Name 'DialogDatabase' -Filter '1=1'| Should -BeExactly 1
+            Get-TableCount -Name 'DialogDatabase' -Filter '1=1' | Should -BeExactly 1
         }
 
         It 'Get count with invalid filter' {
-            Get-TableCount -Name 'DialogDatabase' -Filter '1=2'| Should -BeExactly 0
+            Get-TableCount -Name 'DialogDatabase' -Filter '1=2' | Should -BeExactly 0
         }
 
     }
@@ -168,7 +168,7 @@ Describe 'Entity' {
 
             $events | Should -Not -BeNullOrEmpty
 
-            Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay |Out-Null
+            Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay | Out-Null
         }
 
         It 'Can get event from table' {
@@ -182,9 +182,9 @@ Describe 'Entity' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName; 'EntryDate' = [DateTime]::Today.AddDays(-10)}
 
-            { Invoke-ImEvent $pO -EventName 'CHECK_EXITDATE'} |Should -Not -Throw
+            { Invoke-ImEvent $pO -EventName 'CHECK_EXITDATE'} | Should -Not -Throw
 
-            Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay |Out-Null
+            Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay | Out-Null
         }
 
     }
@@ -206,13 +206,14 @@ Describe 'Entity' {
 
             $methods | Should -Not -BeNullOrEmpty
 
-            Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay |Out-Null
+            Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay | Out-Null
         }
 
     }
 
     AfterAll {
-        Get-Entity -Type 'Person' | Remove-Entity -IgnoreDeleteDelay |Out-Null
+        Get-Entity -Type 'Person' | Remove-Entity -IgnoreDeleteDelay | Out-Null
+        Get-TableCount -Name 'Person' | Should -BeExactly 0
         Remove-IdentityManagerSession
     }
 

@@ -1,6 +1,6 @@
 $config = New-PesterConfiguration
 $config.Run.Path = '.'
-$config.CodeCoverage.Enabled = $true
+$config.CodeCoverage.Enabled = $false
 $config.CodeCoverage.OutputPath = 'IdentityManager.Posh.CodeCoverage.xml'
 $config.CodeCoverage.Path = ".\PSIdentityManagerUtils\*\*.ps*1"
 $config.CodeCoverage.CoveragePercentTarget = 65

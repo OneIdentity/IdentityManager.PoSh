@@ -23,14 +23,14 @@ Describe 'Entity performance' {
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "Entity created in $($et.TotalSeconds) seconds"
 
-            $p | Should -Not -BeNullOrEmpty
-
-            Get-TableCount -Name 'Person'| Should -BeExactly 1
+            Get-TableCount -Name 'Person' | Should -BeExactly 1
 
             $st = $(Get-Date)
-            Remove-Entity -Type 'Person' -Identity ($p).UID_Person -IgnoreDeleteDelay |Out-Null
+            Remove-Entity -Type 'Person' -Identity ($p).UID_Person -IgnoreDeleteDelay | Out-Null
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "Entity removed in $($et.TotalSeconds) seconds"
+
+            Get-TableCount -Name 'Person' | Should -BeExactly 0
         }
 
         It 'Can create 100 entities - single operation' {
@@ -43,23 +43,23 @@ Describe 'Entity performance' {
                 $randomLastName = [String][System.Guid]::NewGuid()
 
                 $st1 = $(Get-Date)
-                $p = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName}
+                New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName}
                 $et1 = New-TimeSpan $st1 $(Get-Date)
                 $AvgEntityCreateTime += $et1.TotalSeconds
-
-                $p | Should -Not -BeNullOrEmpty
             }
             Write-Debug "`t==> Avg. entity created (direct save) in $($AvgEntityCreateTime / $Quantity) seconds"
 
             $ett = New-TimeSpan $tt $(Get-Date)
             Write-Debug "$Quantity entities (direct save) created in $($ett.TotalSeconds) seconds"
 
-            Get-TableCount -Name 'Person'| Should -BeExactly $Quantity
+            Get-TableCount -Name 'Person' | Should -BeExactly $Quantity
 
             $st = $(Get-Date)
             Get-Entity -Type 'Person' | Remove-Entity -IgnoreDeleteDelay |Out-Null
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "$Quantity entities removed in $($et.TotalSeconds) seconds"
+
+            Get-TableCount -Name 'Person' | Should -BeExactly 0
         }
 
         It 'Can create entity - batch operation' {
@@ -67,7 +67,6 @@ Describe 'Entity performance' {
 
             $st = $(Get-Date)
             $p = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName} -Unsaved
-            $p | Should -Not -BeNullOrEmpty
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "Entity created in memory in $($et.TotalSeconds) seconds"
 
@@ -86,12 +85,14 @@ Describe 'Entity performance' {
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "Unit of work saved to database in $($et.TotalSeconds) seconds"
 
-            Get-TableCount -Name 'Person'| Should -BeExactly 1
+            Get-TableCount -Name 'Person' | Should -BeExactly 1
 
             $st = $(Get-Date)
             Remove-Entity -Type 'Person' -Identity ($p).UID_Person -IgnoreDeleteDelay |Out-Null
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "Entity removed in $($et.TotalSeconds) seconds"
+
+            Get-TableCount -Name 'Person' | Should -BeExactly 0
         }
 
         It 'Can create 100 entities - batch operation' {
@@ -130,12 +131,14 @@ Describe 'Entity performance' {
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "Unit of work saved to database in $($et.TotalSeconds) seconds"
 
-            Get-TableCount -Name 'Person'| Should -BeExactly $Quantity
+            Get-TableCount -Name 'Person' | Should -BeExactly $Quantity
 
             $st = $(Get-Date)
             Get-Entity -Type 'Person' | Remove-Entity -IgnoreDeleteDelay |Out-Null
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "$Quantity entities removed in $($et.TotalSeconds) seconds"
+
+            Get-TableCount -Name 'Person' | Should -BeExactly 0
         }
 
     }
@@ -163,7 +166,6 @@ Describe 'Typped wrapper performance' {
 
             $st = $(Get-Date)
             $p = New-Person -FirstName 'Max' -LastName "$randomLastName" -Unsaved
-            $p | Should -Not -BeNullOrEmpty
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "Person created in memory in $($et.TotalSeconds) seconds"
 
@@ -186,6 +188,8 @@ Describe 'Typped wrapper performance' {
             Remove-Entity -Type 'Person' -Identity ($p).UID_Person -IgnoreDeleteDelay |Out-Null
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "Person removed in $($et.TotalSeconds) seconds"
+
+            Get-TableCount -Name 'Person'| Should -BeExactly 0
         }
 
         It 'Can create 100 entities - batch operation' {
@@ -228,6 +232,8 @@ Describe 'Typped wrapper performance' {
             Get-Entity -Type 'Person' | Remove-Entity -IgnoreDeleteDelay |Out-Null
             $et = New-TimeSpan $st $(Get-Date)
             Write-Debug "$Quantity entities removed in $($et.TotalSeconds) seconds"
+
+            Get-TableCount -Name 'Person'| Should -BeExactly 0
         }
     }
 

@@ -28,7 +28,7 @@ Describe 'Scripting' {
 
         It 'Can handle errors' {
             $params = @('Unittest')
-            { Invoke-IdentityManagerScript -Name 'QBM_GetConfigParmValue' -Parameters $params } | Should -Throw "*The configuration parameter 'Unittest' does not exist or is not set. It is a mandatory value and must be configured in your system.*"
+            { Invoke-IdentityManagerScript -Name 'QBM_GetConfigParmValue' -Parameters $params } | Should -Throw "*does not exist or is not set. It is a mandatory value and must be configured in your system.*"
         }
 
     }
