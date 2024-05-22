@@ -12,38 +12,35 @@ Describe 'Resolve-Exception' {
     Context 'Can handle exception' {
 
         It 'Does throw on null' {
-            { Resolve-Exception -ExceptionObject $null } |Should -Throw
+            { Resolve-Exception -ExceptionObject $null } | Should -Throw
         }
 
-        # It 'Does not throw on New-Object' {
-        #     { Resolve-Exception -ExceptionObject New-Object } |Should -Not -Throw
-        # }
+        It 'Does not throw if desired' {
+            {
+                . "$PSScriptRoot\..\PSIdentityManagerUtils\Private\common.ps1"
 
-        # It 'Does handle exception' {
-        #     $Error.Clear()
-        #     {
-        #         try {
-        #             throw 'unittest'
-        #         } catch {
-        #             Resolve-Exception -ExceptionObject $PSitem
-        #         }
-        #     } |Should -Throw '*unittest*'
+                $ex = New-Object System.Management.Automation.RuntimeException 'UnittestEx'
+                $mockExceptionObject = [PsCustomObject]@{
+                    ScriptStackTrace = "Empty ScriptStackTrace"
+                    StackTrace = "Empty StackTrace"
+                    Exception = $ex
+                }
+                Resolve-Exception -ExceptionObject $mockExceptionObject -CustomErrorAction 'SilentlyContinue'
+            } | Should -Not -Throw
+        }
 
-        #     $Error[0].Exception.Message.Contains('---[StackTrace]---') |Should -BeTrue
-        # }
+        It 'Does throw' {
+            {
+                $ex = New-Object System.Management.Automation.RuntimeException 'UnittestEx'
+                $mockExceptionObject = [PsCustomObject]@{
+                    ScriptStackTrace = "Empty ScriptStackTrace"
+                    StackTrace = "Empty StackTrace"
+                    Exception = $ex
+                }
 
-        # It 'Can hide stack trace' {
-        #     $Error.Clear()
-        #     {
-        #         try {
-        #             throw 'unittest'
-        #         } catch {
-        #             Resolve-Exception -ExceptionObject $PSitem -HideStackTrace
-        #         }
-        #     } |Should -Throw '*unittest*'
-
-        #     $Error[0].Exception.Message.Contains('---[StackTrace]---') |Should -BeFalse
-        # }
+                Resolve-Exception -ExceptionObject $mockExceptionObject
+            } | Should -Throw
+        }
     }
 }
 

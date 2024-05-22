@@ -52,7 +52,7 @@ Describe 'Entity' {
 
         It 'Can modify person by pipeline' {
             $randomLastName = [String][System.Guid]::NewGuid()
-            $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" |Set-Person -CustomProperty01 'IntegrationTest'
+            $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" | Set-Person -CustomProperty01 'IntegrationTest'
             $pV = Get-Person -Lastname "$randomLastName"
 
             $pO.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
@@ -60,7 +60,7 @@ Describe 'Entity' {
 
         It 'Can modify person by pipeline with overwrite' {
             $randomLastName = [String][System.Guid]::NewGuid()
-            $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" -CustomProperty01 'IntegrationTest' |Set-Person -CustomProperty01 'Test'
+            $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" -CustomProperty01 'IntegrationTest' | Set-Person -CustomProperty01 'Test'
             $pV = Get-Person -Lastname "$randomLastName"
 
             $pO.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
@@ -68,7 +68,7 @@ Describe 'Entity' {
 
         It 'Can modify person by pipeline with reset' {
             $randomLastName = [String][System.Guid]::NewGuid()
-            $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" -CustomProperty01 'IntegrationTest' |Set-Person -CustomProperty01 $null
+            $pO = New-Person -FirstName 'Max' -LastName "$randomLastName" -CustomProperty01 'IntegrationTest' | Set-Person -CustomProperty01 $null
             $pV = Get-Person -Lastname "$randomLastName"
 
             $pO.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
@@ -89,6 +89,7 @@ Describe 'Entity' {
 
     AfterAll {
         Get-Entity -Type 'Person' | Remove-Entity -IgnoreDeleteDelay |Out-Null
+        Get-TableCount -Name 'Person' | Should -BeExactly 0
         Remove-IdentityManagerSession
     }
 

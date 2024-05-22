@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.0.18] - 2024-05-22
+
+### Fixes
+
+- Fix reloading of entities
+
+### Testing
+
+- Fix performance tests
+- More tests for Resolve-Exception
+
+### Miscellaneous
+
 ## [0.0.17] - 2024-04-30
 
 ### Fixes
