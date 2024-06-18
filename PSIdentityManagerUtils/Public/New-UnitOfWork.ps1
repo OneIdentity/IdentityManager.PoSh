@@ -29,7 +29,7 @@
     try {
       # Create new UnitOfWork instance
       $unitOfWork = ($sessionToUse).StartUnitOfWork([String][System.Guid]::NewGuid())
-      return $unitOfWork
+      $unitOfWork
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }

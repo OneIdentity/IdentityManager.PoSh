@@ -55,7 +55,7 @@
         }
       }
 
-      return $Entity
+      $Entity
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }

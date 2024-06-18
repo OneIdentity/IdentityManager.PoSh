@@ -59,7 +59,7 @@ function Set-Entity {
         $Entity = Add-EntityMemberExtension -Entity $Entity
       }
 
-      return $Entity
+      $Entity
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }

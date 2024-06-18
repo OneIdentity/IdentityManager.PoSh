@@ -71,7 +71,7 @@ function global:Get-$Prefix$funcName() {
           }
 
           $columnTemplate = @"
-`r`n
+$([Environment]::NewLine)
   [parameter(Mandatory = `$false, HelpMessage = "$helpText")]
   [$dateType] `$$paramName,
 "@
@@ -82,7 +82,7 @@ function global:Get-$Prefix$funcName() {
         $cols[$cols.Length -1 ] = $cols[$cols.Length - 1].Substring(0, $cols[$cols.Length - 1].Length - 1)
 
         $funcTemplateFooter = @"
-`r`n
+$([Environment]::NewLine)
   Process {
     try {
       `$session = `$Global:imsessions['$Prefix'].Session

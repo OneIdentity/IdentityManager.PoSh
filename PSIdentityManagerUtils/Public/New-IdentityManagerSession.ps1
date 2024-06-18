@@ -28,7 +28,6 @@ function New-IdentityManagerSession {
       . (Join-Path "$PSScriptRoot".Replace('Public', 'Private') 'common.ps1')
     }
 
-    # Load product files
     $oneImBasePath = Add-IdentityManagerProductFile "$ProductFilePath"
   }
 
@@ -37,7 +36,7 @@ function New-IdentityManagerSession {
     try {
       # Check if there is already a session in global session store with this prefix
       if ($Global:imsessions.Contains($Prefix)) {
-        throw "There is already a connection with prefix '$Prefix' defined. Please specify another prefix."
+        throw "[!] There is already a connection with prefix '$Prefix' defined. Please specify another prefix."
       }
 
       if ($FactoryName -eq 'QBM.AppServer.Client.ServiceClientFactory') {

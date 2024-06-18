@@ -55,7 +55,7 @@ function Remove-Entity {
         Save-UnitOfWork -UnitOfWork $uow
       }
 
-      return $Entity
+      $Entity
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }
