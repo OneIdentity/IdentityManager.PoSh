@@ -15,18 +15,20 @@ function Get-IdentityManagerSessionToUse {
       if ($null -eq $Session) {
         if ($Global:imsessions.Count -eq 1) {
           $sessionToUse = $Global:imsessions[$Global:imsessions.Keys[0]].Session
+        } elseif ($Global:imsessions.Count -gt 1) {
+          throw [System.InvalidOperationException] '[!] There is more than one session active. You must specify which session should be used.'
         } else {
-          throw [System.InvalidOperationException] 'There is more than one session active. You must specify which session should be used.'
+          throw [System.InvalidOperationException] '[!] There is no session. You must open a new session with New-IdentityManagerSession before proceeding.'
         }
       } else {
         $sessionToUse = $Session
       }
 
       if ($null -eq $sessionToUse) {
-        throw [System.InvalidOperationException] 'There is no session. You must open a new session with New-IdentityManagerSession before proceeding.'
+        throw [System.InvalidOperationException] '[!] There is no session. You must open a new session with New-IdentityManagerSession before proceeding.'
       }
 
-      return $sessionToUse
+      $sessionToUse
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }

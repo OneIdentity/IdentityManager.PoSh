@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [0.0.19] - 2024-06-18
+
+### Fixes
+
+- Better detection for unsupported PowerShell version
+- Code cleanup
+
+### Testing
+
+### Miscellaneous
+
 ## [0.0.18] - 2024-05-22
 
 ### Fixes

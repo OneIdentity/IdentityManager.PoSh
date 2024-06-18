@@ -5,13 +5,13 @@ $DebugPreference = 'SilentlyContinue' # Valid values are 'SilentlyContinue' -> D
 function Resolve-Exception {
   [CmdletBinding()]
   Param (
-    [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The exception object to handle')]
-    [ValidateNotNull()]
-    [Object] $ExceptionObject,
-    [parameter(Mandatory = $false, HelpMessage = 'Toogle stacktrace output')]
-    [switch] $HideStackTrace = $false,
-    [parameter(Mandatory = $false, HelpMessage = 'The error action to use')]
-    [String] $CustomErrorAction = 'Stop'
+      [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The exception object to handle')]
+      [ValidateNotNull()]
+      [Object] $ExceptionObject,
+      [parameter(Mandatory = $false, HelpMessage = 'Toogle stacktrace output')]
+      [switch] $HideStackTrace = $false,
+      [parameter(Mandatory = $false, HelpMessage = 'The error action to use')]
+      [String] $CustomErrorAction = 'Stop'
   )
 
   Begin {
@@ -19,42 +19,35 @@ function Resolve-Exception {
 
   Process
   {
-    $sst = ''
-    $st = ''
-
-    if (-Not ($ExceptionObject.PSObject.Properties.Name -contains 'Exception')) {
-      # Do not proceed on any non Exception object
-      Write-Warning -Message "No Exception object."
-      return
-    }
-
-    $e = $ExceptionObject.Exception
-    if ($null -ne (Get-Member -InputObject $ExceptionObject -Name 'ScriptStackTrace')) {
-      $sst = $ExceptionObject.ScriptStackTrace
-    }
-    if ($null -ne (Get-Member -InputObject $ExceptionObject -Name 'StackTrace')) {
-      $st = $ExceptionObject.StackTrace
-    }
-
-    $msg = $e.Message
-    while ($e.InnerException) {
-      $e = $e.InnerException
-
-      $msg += "`n" + $e.Message
-      if ($null -ne (Get-Member -InputObject $e -Name 'ScriptStackTrace')) {
-        $sst += "`n" + $e.ScriptStackTrace + "`n---"
+      $sst = ''
+      $st = ''
+      $e = $ExceptionObject.Exception
+      if ($null -ne (Get-Member -InputObject $ExceptionObject -Name 'ScriptStackTrace')) {
+          $sst = $ExceptionObject.ScriptStackTrace
+      }
+      if ($null -ne (Get-Member -InputObject $ExceptionObject -Name 'StackTrace')) {
+          $st = $ExceptionObject.StackTrace
       }
 
-      if ($null -ne (Get-Member -InputObject $e -Name 'StackTrace')) {
-        $st += "`n" + $e.StackTrace + "`n---"
+      $msg = $e.Message
+      while ($e.InnerException) {
+          $e = $e.InnerException
+
+          $msg += $([Environment]::NewLine) + $e.Message
+          if ($null -ne (Get-Member -InputObject $e -Name 'ScriptStackTrace')) {
+              $sst += $([Environment]::NewLine) + $e.ScriptStackTrace + $([Environment]::NewLine) + "---"
+          }
+
+          if ($null -ne (Get-Member -InputObject $e -Name 'StackTrace')) {
+              $st += $([Environment]::NewLine) + $e.StackTrace + $([Environment]::NewLine) + "---"
+          }
       }
-    }
 
-    if (-not ($HideStackTrace)) {
-      $msg += "`n---[ScriptStackTrace]---`n" + $sst + "`n---[StackTrace]---`n" + $st
-    }
+      if (-not ($HideStackTrace)) {
+          $msg += $([Environment]::NewLine) + "---[ScriptStackTrace]---" + $([Environment]::NewLine) + $sst + $([Environment]::NewLine) + "---[StackTrace]---" + $([Environment]::NewLine) + $st
+      }
 
-    Write-Error -Message $msg -ErrorAction $CustomErrorAction
+      Write-Error -Message $msg -ErrorAction $CustomErrorAction
   }
 
   End {
@@ -87,12 +80,22 @@ function Add-FileToAppDomain {
   if (-not ([appdomain]::currentdomain.getassemblies() |Where-Object Location -Like ${FileToLoad})) {
     try {
       [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
-      $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
-      Write-Debug "[+] File ${File} loaded with version ${clientVersion} from ${BasePath}."
+      $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad)
+      Write-Debug "[+] File ${File} loaded with version $($clientVersion.ProductVersion) from ${BasePath}."
+    } catch {
+      Resolve-Exception -ExceptionObject $PSitem
+    }
+  } else {
+    $AlreadyLoaderAssembly = $([appdomain]::currentdomain.getassemblies() |Where-Object Location -Like ${FileToLoad}).Location
+    try {
+      $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($AlreadyLoaderAssembly)
+      Write-Debug "[+] File ${File} already loaded with version $($clientVersion.ProductVersion) from ${BasePath}."
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }
   }
+
+  $clientVersion
 }
 
 function Add-IdentityManagerProductFile {
@@ -120,12 +123,22 @@ function Add-IdentityManagerProductFile {
 
       if (-not (Test-Path $oneImBasePath -PathType Container))
       {
-        Write-Error -Message "`n[!] Can't find any place with needed Identity Manager assemblies.`n"
+        Write-Error -Message "[!] Can't find any place with needed Identity Manager assemblies."
       }
     }
   }
 
-  Add-FileToAppDomain -BasePath $oneImBasePath -File $VIDB
+  $ViDBVersion = Add-FileToAppDomain -BasePath $oneImBasePath -File $VIDB
+
+  # Powershell 7 is only supported with versions after 9.2
+  if (5 -eq $PSVersionTable.PSVersion.Major -and $ViDBVersion.FileMajorPart -ge 9 -and $ViDBVersion.FileMinorPart -gt 2) {
+    throw "[!] This version of Identity Manager ($($ViDBVersion.ProductVersion)) is not usable with PowerShell version $($PSVersionTable.PSVersion)."
+  }
+
+  # Support Identity Manager after 9.2 with version with PowerShell 7
+  if (7 -eq $PSVersionTable.PSVersion.Major -and $ViDBVersion.FileMajorPart -ge 9 -and $ViDBVersion.FileMinorPart -gt 2) {
+    Add-FileToAppDomain -BasePath $(Join-Path $oneImBasePath 'net8.0') -File 'Microsoft.Data.SqlClient.dll' | Out-Null
+  }
 
   $oneImBasePath
 }

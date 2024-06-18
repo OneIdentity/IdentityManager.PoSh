@@ -56,7 +56,7 @@ function New-Entity {
         $entity = Add-EntityMemberExtension -Entity $entity
       }
 
-      return $entity
+      $entity
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }

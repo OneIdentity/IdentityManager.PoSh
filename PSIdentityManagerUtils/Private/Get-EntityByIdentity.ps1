@@ -53,7 +53,7 @@ function Get-EntityByIdentity {
       $Entity = Add-EntityMemberExtension -Entity $Entity
 
       # Return the loaded entity
-      return $Entity
+      $Entity
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }

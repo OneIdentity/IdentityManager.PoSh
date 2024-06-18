@@ -33,7 +33,7 @@
   Process {
     try {
       $scriptEnv = [VI.DB.Entities.SessionExtensions]::Scripts($sessionToUse)
-      $scriptClass = $scriptEnv['Scripts']
+      $scriptClass = $scriptEnv['scripts']
       $scriptRunner = New-Object 'VI.DB.Scripting.ScriptRunner' -ArgumentList @($scriptClass, $sessionToUse)
 
       # register events
@@ -51,7 +51,7 @@
         $registeredEvents | ForEach-Object { Unregister-Event -SubscriptionId $_.Id -ErrorAction 'SilentlyContinue' }
       }
 
-      return $result
+      $result
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }

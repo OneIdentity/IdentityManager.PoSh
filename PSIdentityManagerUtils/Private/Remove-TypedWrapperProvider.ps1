@@ -56,7 +56,7 @@ function global:Remove-$Prefix$funcName() {
 "@
 
         $funcTemplateFooter = @"
-`r`n
+$([Environment]::NewLine)
   Process {
     try {
       `$session = `$Global:imsessions['$Prefix'].Session

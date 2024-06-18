@@ -39,17 +39,17 @@ function Get-Entity {
 
       if (-not [String]::IsNullOrEmpty($Identity)) {
         if (-not ([String]::IsNullOrEmpty($Type))) {
-          return Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity
+          Get-EntityByIdentity -Session $sessionToUse -Type $Type -Identity $Identity
         } else {
           $tableName = ''
           # Try to figure out if we have an XObjectKey
           try {
             $tableName = ([VI.DB.DbObjectKey]::new($Identity)).Tablename
           } catch {
-            throw [System.ArgumentException] "Could not create a valid XObjectKey from '$Identity'."
+            throw [System.ArgumentException] "[!] Could not create a valid XObjectKey from '$Identity'."
           }
 
-          return Get-EntityByIdentity -Session $sessionToUse -Type $tableName -Identity $Identity
+          Get-EntityByIdentity -Session $sessionToUse -Type $tableName -Identity $Identity
         }
 
       } else {
