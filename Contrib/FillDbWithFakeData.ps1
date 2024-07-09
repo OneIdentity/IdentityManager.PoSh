@@ -824,196 +824,94 @@ $FakeData.PersonInAERoles = New-PersonInAERoles -Session $Session -Faker $Faker 
 
 # Add some random Identities to some common AERoles
 
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-AEADMIN') {
-  # Base roles\Administrators
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-AEADMIN' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
+$CommonAeRoles = @(
+'AOB-AEROLE-ADMIN', # Application Governance\Administrators
+'AOB-AEROLE-APPROVERS', # Application Governance\Application approvers
+'AOB-AEROLE-OWNERS', # Application Governance\Application owners
+'QER-AEROLE-AEADMIN', # Base roles\Administrators
+'QER-AEROLE-SCIM-FILTER', # Base roles\ApiServer SCIM Filter
+'QER-F8B968E2DFECD64EAFFE6A823816549F', # Base roles\Lock single properties
+'QER-812e7024e3484428bb363ec24da53bfa', # Base roles\Operations support
+'QER-493191220A59224BAD0D89D67C769D68', # Base roles\Operations support\Password helpdesk
+'QER-5171ec005dde4649b3e10b3736033e0d', # Base roles\Operations support\Synchronization post-processing
+'QER-ec9fe80870cb443da743d68d270c17be', # Base roles\Operations support\System administrators
+'QER-AEROLE-CRITICAL-WHERECLAUSE', # Base roles\Security-critical queries
+'QER-AEROLE-CUSTOMADMIN-ADMIN', # Custom\Administrators
+'QER-AEROLE-CUSTOMADMIN-CUSTOM', # Custom\Managers
+'CAP-AEROLE-AUDITING-AUDITOR', # Identity & Access Governance\§§Auditors
+'ATT-AEROLE-ATTESTATIONADMIN-ADMIN', # Identity & Access Governance\Attestation\Administrators
+'ATT-AEROLE-ATTESTATION-OWNER-DIRECT', # Identity & Access Governance\Attestation\Attestation policy owners\Direct owners
+'ATT-AEROLE-ATTESTATION-OWNER-ROLE', # Identity & Access Governance\Attestation\Attestation policy owners\Owner roles
+'ATT-AEROLE-ATTESTATION-INTERVENTION', # Identity & Access Governance\Attestation\Chief approval team
+'ATT-6567356C50B5460693BBF3CF69F5883B', # Identity & Access Governance\Attestation\External user approvers
+'POL-AEROLE-QERPOLICY-ADMIN', # Identity & Access Governance\Company policies\Administrators
+'POL-AEROLE-QERPOLICY-ATTESTATOR', # Identity & Access Governance\Company policies\Attestors
+'POL-AEROLE-QERPOLICY-EXCEPTION', # Identity & Access Governance\Company policies\Exception approvers
+'POL-AEROLE-QERPOLICY-RESPONSIBLE', # Identity & Access Governance\Company policies\Policy supervisors
+'CAP-AEROLE-IAG-CISO', # Identity & Access Governance\Compliance & Security Officer
+'CPL-AEROLE-RULEADMIN-ADMIN', # Identity & Access Governance\Identity Audit\Administrators
+'CPL-AEROLE-RULEADMIN-ATTESTATOR', # Identity & Access Governance\Identity Audit\Attestors
+'CPL-AEROLE-RULEADMIN-EXCEPTION', # Identity & Access Governance\Identity Audit\Exception approvers
+'SAC-AEROLE-RULEADMIN-SAPRIGHTS', # Identity & Access Governance\Identity Audit\Maintain SAP functions
+'CPL-AEROLE-RULEADMIN-RESPONSIBLE', # Identity & Access Governance\Identity Audit\Rule supervisors
+'RPS-AEROLE-IAG-REPORT-ADMIN', # Identity & Access Governance\Report Subscriptions\Administrators
+'QER-AEROLE-AEROLEADMIN-ADDMANAGER', # Identity Management\Application roles\Additional managers
+'RMB-AEROLE-ROLEADMIN-ADDMANAGER', # Identity Management\Business roles\Additional managers
+'RMB-AEROLE-ROLEADMIN-ADMIN', # Identity Management\Business roles\Administrators
+'RMB-AEROLE-ROLEADMIN-ATTESTATOR', # Identity Management\Business roles\Attestors
+'RMB-AEROLE-ROLEADMIN-RULER', # Identity Management\Business roles\Role Approvers
+'RMB-AEROLE-ROLEADMIN-RULERIT', # Identity Management\Business roles\Role Approvers (IT)
+'QER-AEROLE-PERSONADMIN-ADMIN', # Identity Management\Identities\Administrators
+'QER-AEROLE-STRUCTADMIN-ADDMANAGER', # Identity Management\Organizations\Additional managers
+'QER-AEROLE-STRUCTADMIN-ADMIN', # Identity Management\Organizations\Administrators
+'ATT-AEROLE-STRUCTADMIN-ATTESTATOR', # Identity Management\Organizations\Attestors
+'QER-AEROLE-STRUCTADMIN-RULER', # Identity Management\Organizations\Role Approvers
+'QER-AEROLE-STRUCTADMIN-RULERIT', # Identity Management\Organizations\Role Approvers (IT)
+'PAG-AEROLE-ASSET-OWNER', # Privileged Account Governance\Asset and account owners
+'QER-AEROLE-ITSHOPADMIN-ADDMANAGER', # Request & Fulfillment\IT Shop\Additional managers
+'QER-AEROLE-ITSHOPADMIN-ADMIN', # Request & Fulfillment\IT Shop\Administrators
+'ATT-AEROLE-ITSHOPADMIN-ATTESTATOR', # Request & Fulfillment\IT Shop\Attestors
+'QER-AEROLE-ITSHOP-INTERVENTION', # Request & Fulfillment\IT Shop\Chief approval team
+'QER-AEROLE-ITSHOPADMIN-OWNER', # Request & Fulfillment\IT Shop\Product owners
+'ADS-AEROLE-ADSGROUP-OWNER-EMPTY', # Request & Fulfillment\IT Shop\Product owners\<Without owner in AD>
+'SP0-AEROLE-SPSGROUP-OWNER-EMPTY', # Request & Fulfillment\IT Shop\Product owners\<Without owner in SharePoint>
+'PAG-AEROLE-ITSHOP-OWNER-USRGROUP', # Request & Fulfillment\IT Shop\Product owners\PAM user groups
+'APC-AEROLE-ITSHOP-OWNER-APP', # Request & Fulfillment\IT Shop\Product owners\Software
+'RPS-AEROLE-ITSHOP-OWNER-RPSREPORT', # Request & Fulfillment\IT Shop\Product owners\Subscribable reports
+'RMS-AEROLE-ITSHOP-OWNER-ESET', # Request & Fulfillment\IT Shop\Product owners\System roles
+'ADS-AEROLE-NAMESPACEADMIN-ADS', # Target systems\Active Directory
+'TSB-AEROLE-NAMESPACEADMIN-ADMIN', # Target systems\Administrators
+'AAD-AEROLE-NAMESPACEADMIN-AAD', # Target systems\Azure Active Directory
+'AAD-3ba6aa44fefb4b2694b7ca12d504b903', # Target systems\Azure Active Directory\Administrative unit owners
+'AAD-c6b5865628cd46249367730f922a490b', # Target systems\Azure Active Directory\App registration owners
+'AAD-AA4FBEC4EBCD3641BA75B7479D090EEF', # Target systems\Azure Active Directory\Role owners
+'AAD-1d27dbae3fe94c9c83e633e72e4ab235', # Target systems\Azure Active Directory\Service principal owners
+'CSM-AEROLE-NAMESPACEADMIN-CSM', # Target systems\Cloud target systems
+'TSB-AEROLE-NAMESPACEADMIN-UNSB', # Target systems\Custom target systems
+'NDO-AEROLE-NAMESPACEADMIN-NDO', # Target systems\Domino
+'EX0-AEROLE-NAMESPACEADMIN-EX0', # Target systems\Exchange
+'O3E-AEROLE-NAMESPACEADMIN-O3E', # Target systems\Exchange Online
+'GAP-AEROLE-NAMESPACEADMIN-GAP', # Target systems\G Suite
+'LDP-AEROLE-NAMESPACEADMIN-LDAP', # Target systems\LDAP
+'OLG-AEROLE-NAMESPACEADMIN-OLG', # Target systems\OneLogin
+'EBS-AEROLE-NAMESPACEADMIN-EBS', # Target systems\Oracle E-Business Suite
+'PAG-AEROLE-NAMESPACEADMIN-PAG', # Target systems\Privileged Account Management
+'SAP-AEROLE-NAMESPACEADMIN-SAPR3', # Target systems\SAP R/3
+'SP0-AEROLE-NAMESPACEADMIN-SPS', # Target systems\SharePoint
+'O3S-AEROLE-NAMESPACEADMIN-O3S', # Target systems\SharePoint Online
+'TSB-AEROLE-NAMESPACEADMIN-UNS', # Target systems\Unified Namespace
+'UNX-AEROLE-NAMESPACEADMIN-UNIX', # Target systems\Unix
+'UCI-AEROLE-CLOUD-ADMINISTRATOR', # Universal Cloud Interface\Administrators
+'UCI-AEROLE-CLOUD-AUDITOR', # Universal Cloud Interface\Auditors
+'UCI-AEROLE-CLOUD-OPERATOR' # Universal Cloud Interface\Operators
+)
 
-if (Get-Entity -Type 'AERole' -Identity 'QER-812e7024e3484428bb363ec24da53bfa') {
-  # Base roles\Operations support
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-812e7024e3484428bb363ec24da53bfa' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-SCIM-FILTER') {
-  # Base roles\API Server SCIM filter
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-SCIM-FILTER' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-CRITICAL-WHERECLAUSE') {
-  # Base roles\Security-critical queries
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-CRITICAL-WHERECLAUSE' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'ATT-AEROLE-ATTESTATION-INTERVENTION') {
-  # Identity & Access Governance\Attestation\Chief approval team
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'ATT-AEROLE-ATTESTATION-INTERVENTION' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'POL-AEROLE-QERPOLICY-EXCEPTION') {
-  # Identity & Access Governance\Company policies\Exception approvers
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'POL-AEROLE-QERPOLICY-EXCEPTION' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'POL-AEROLE-QERPOLICY-ATTESTATOR') {
-  # Identity & Access Governance\Company policies\Attestors
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'POL-AEROLE-QERPOLICY-ATTESTATOR' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'POL-AEROLE-QERPOLICY-RESPONSIBLE') {
-  # Identity & Access Governance\Company policies\Policy supervisors
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'POL-AEROLE-QERPOLICY-RESPONSIBLE' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'CAP-AEROLE-AUDITING-AUDITOR') {
-  # Identity & Access Governance\Auditors
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'CAP-AEROLE-AUDITING-AUDITOR' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'CAP-AEROLE-IAG-CISO') {
-  # Identity & Access Governance\Compliance & Security Officer
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'CAP-AEROLE-IAG-CISO' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'CPL-AEROLE-RULEADMIN-ATTESTATOR') {
-  # Identity & Access Governance\Identity Audit\Attestors
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'CPL-AEROLE-RULEADMIN-ATTESTATOR' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'CPL-AEROLE-RULEADMIN-EXCEPTION') {
-  # Identity & Access Governance\Identity Audit\Exception approvers
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'CPL-AEROLE-RULEADMIN-EXCEPTION' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'CPL-AEROLE-RULEADMIN-RESPONSIBLE') {
-  # Identity & Access Governance\Identity Audit\Rule supervisors
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'CPL-AEROLE-RULEADMIN-RESPONSIBLE' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'RPS-AEROLE-IAG-REPORT-ADMIN') {
-  # Identity & Access Governance\Report Subscriptions\Administrators
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'RPS-AEROLE-IAG-REPORT-ADMIN' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'RMB-AEROLE-ROLEADMIN-ADMIN') {
-  # Identity Management\Business roles\Administrators
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'RMB-AEROLE-ROLEADMIN-ADMIN' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'RMB-AEROLE-ROLEADMIN-ATTESTATOR') {
-  # Identity Management\Business roles\Attestors
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'RMB-AEROLE-ROLEADMIN-ATTESTATOR' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'RMB-AEROLE-ROLEADMIN-RULER') {
-  # Identity Management\Business roles\Role Approvers
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'RMB-AEROLE-ROLEADMIN-RULER' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'RMB-AEROLE-ROLEADMIN-RULERIT') {
-  # Identity Management\Business roles\Role Approvers
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'RMB-AEROLE-ROLEADMIN-RULERIT' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-PERSONADMIN-ADMIN') {
-  # Identity Management\Employees\Administrators
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-PERSONADMIN-ADMIN' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-STRUCTADMIN-ADMIN') {
-  # Identity Management\Organizations\Administrators
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-STRUCTADMIN-ADMIN' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR') {
-  # Identity Management\Organizations\Attestors
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-STRUCTADMIN-RULER') {
-  # Identity Management\Organizations\Role approvers
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-STRUCTADMIN-RULER' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-STRUCTADMIN-RULERIT') {
-  # Identity Management\Organizations\Role approvers (IT)
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-STRUCTADMIN-RULERIT' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-ITSHOPADMIN-ADMIN') {
-  # Request & Fulfillment\IT Shop\Administrators
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-ITSHOPADMIN-ADMIN' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'ATT-AEROLE-ITSHOPADMIN-ATTESTATOR') {
-  # Request & Fulfillment\IT Shop\Attestors
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'ATT-AEROLE-ITSHOPADMIN-ATTESTATOR' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-ITSHOP-INTERVENTION') {
-  # Request & Fulfillment\IT Shop\Chief approval team
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-ITSHOP-INTERVENTION' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'QER-AEROLE-ITSHOPADMIN-OWNER') {
-  # Request & Fulfillment\IT Shop\Product owners
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'QER-AEROLE-ITSHOPADMIN-OWNER' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'RPS-AEROLE-ITSHOP-OWNER-RPSREPORT') {
-  # Request & Fulfillment\IT Shop\Product owners\Subscribable reports
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'RPS-AEROLE-ITSHOP-OWNER-RPSREPORT' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'RMS-AEROLE-ITSHOP-OWNER-ESET') {
-  # Request & Fulfillment\IT Shop\Product owners\System roles
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'RMS-AEROLE-ITSHOP-OWNER-ESET' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'TSB-AEROLE-NAMESPACEADMIN-ADMIN') {
-  # Target systems\Administrators
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'TSB-AEROLE-NAMESPACEADMIN-ADMIN' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'TSB-AEROLE-NAMESPACEADMIN-UNSB') {
-  # Target systems\Custom target systems
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'TSB-AEROLE-NAMESPACEADMIN-UNSB' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-}
-
-if (Get-Entity -Type 'AERole' -Identity 'TSB-AEROLE-NAMESPACEADMIN-UNS') {
-  # Target systems\Unified Namespace
-  $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole 'TSB-AEROLE-NAMESPACEADMIN-UNS' `
-    -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
+$CommonAeRoles | ForEach-Object {
+  if (Get-Entity -Type 'AERole' -Identity $_) {
+    # Base roles\Administrators
+    $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole $_ `
+      -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
+  }
 }
 
 $FakeData.PersonInAERoles | Add-UnitOfWorkEntity -UnitOfWork $uow
