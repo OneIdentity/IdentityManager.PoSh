@@ -740,10 +740,6 @@ $ItShop = New-ITShopOrg -Ident_Org 'FakeShop' `
   -CustomProperty01 'Fakedata' `
   -Unsaved
 
-if ($null -ne $ItShop.PSObject.Members['UID_OrgAttestator']) {
-  $ItShop.UID_OrgAttestator = 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR'
-}
-
 # Customer Folder
 $ItShopCustomer = New-ITShopOrg -Ident_Org 'Customers of FakeShop' `
   -ITShopInfo 'CU' `
@@ -782,10 +778,6 @@ $ItShopShelf = New-ITShopOrg -Ident_Org 'Shelf for FakeShop' `
   -Description $Faker.Lorem.Sentence(3, 5) `
   -CustomProperty01 'Fakedata' `
   -Unsaved
-
-if ($null -ne $ItShopShelf.PSObject.Members['UID_OrgAttestator']) {
-  $ItShopShelf.UID_OrgAttestator = 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR'
-}
 
 $ItShopShelf.UID_ParentITShopOrg = $ItShop.UID_ITShopOrg
 
