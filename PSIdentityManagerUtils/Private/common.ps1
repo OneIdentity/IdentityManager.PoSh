@@ -54,6 +54,24 @@ function Resolve-Exception {
   }
 }
 
+function Get-SqlFactoryFromConnectionString {
+  [CmdletBinding()]
+  [OutputType([string])]
+  param (
+    [parameter(Mandatory = $true, Position = 0, HelpMessage = 'Connectionstring to analyze')]
+    [ValidateNotNullOrEmpty()]
+    [String] $ConnectionString
+  )
+
+  if ($ConnectionString.Contains('Initial Catalog')) {
+    return 'VI.DB.ViSqlFactory'
+  } elseif ( $ConnectionString.Contains('url=')) {
+    return 'QBM.AppServer.Client.ServiceClientFactory'
+  } else {
+    return 'VI.DB.Oracle.ViOracleFactory'
+  }
+}
+
 function Add-FileToAppDomain {
   [CmdletBinding()]
   param (

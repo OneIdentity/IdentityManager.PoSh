@@ -6,7 +6,6 @@ Describe 'Entity' {
         New-IdentityManagerSession  `
             -ConnectionString $Global:connectionString `
             -AuthenticationString $Global:authenticationString `
-            -FactoryName $Global:factory `
             -ProductFilePath $Global:ProductFilePath `
             -ModulesToAdd $Global:modulesToAdd
     }
@@ -37,17 +36,50 @@ Describe 'Entity' {
             $p.UID_Person | Should -BeExactly $pCol.UID_Person
         }
 
+        It 'Can create a person in memory' {
+
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $p = New-Person -FirstName 'Max' -LastName "$randomLastName" -Unsaved
+            $p.IsLoaded | Should -Be $false
+
+            $pCol = Get-Person -Lastname "$randomLastName"
+            $pCol.Count | Should -BeExactly 0
+
+            $uow = New-UnitOfWork
+            $p | Add-UnitOfWorkEntity -UnitOfWork $uow
+            Save-UnitOfWork $uow
+
+            $pCol = Get-Person -Lastname "$randomLastName"
+            $pCol.Count | Should -BeExactly 1
+
+            $p.UID_Person | Should -BeExactly $pCol.UID_Person
+        }
+
     }
 
     Context 'Modify typed wrapper object Person' {
 
-        It 'Can modify person' {
+        It 'Can modify person I' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Person -FirstName 'Max' -LastName "$randomLastName"
             $pM = Set-Person -Entity $pO -CustomProperty01 'IntegrationTest'
             $pV = Get-Person -Lastname "$randomLastName"
 
             $pM.CustomProperty01 | Should -BeExactly $pV.CustomProperty01
+        }
+
+        It 'Can modify person II' {
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $pO = New-Person -FirstName 'Max' -LastName "$randomLastName"
+            $pO.CustomProperty01 = 'IntegrationTest'
+
+            $uow = New-UnitOfWork
+            $pO | Add-UnitOfWorkEntity -UnitOfWork $uow
+            Save-UnitOfWork $uow
+
+            $pV = Get-Person -Lastname "$randomLastName"
+
+            $pV.CustomProperty01 | Should -BeExactly 'IntegrationTest'
         }
 
         It 'Can modify person by pipeline' {

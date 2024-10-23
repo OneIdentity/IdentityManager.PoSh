@@ -6,7 +6,6 @@ Describe 'Entity' {
         New-IdentityManagerSession `
             -ConnectionString $Global:connectionString `
             -AuthenticationString $Global:authenticationString `
-            -FactoryName $Global:factory `
             -ProductFilePath $Global:ProductFilePath `
             -SkipFunctionGeneration
     }
@@ -47,20 +46,46 @@ Describe 'Entity' {
         It 'Set-EntityColumnValue throws on unknown session' {
             { Set-EntityColumnValue -Session 'Unittest' } | Should -Throw '*The given value is not a valid session*'
         }
+
+        It 'Test-Entity throws on unknown session' {
+            { Test-Entity -Session 'Unittest' } | Should -Throw '*The given value is not a valid session*'
+        }
     }
 
     Context 'Create entities' {
+
         It 'Can create a new entity' {
 
             $randomLastName = [String][System.Guid]::NewGuid()
             $p = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName}
             $p | Should -Not -BeNullOrEmpty
+            $p.IsLoaded | Should -Be $true
 
             $pCol = Get-Entity -Type 'Person' -Filter "Lastname = '$randomLastName'"
             $pCol.Count | Should -BeExactly 1
 
             $p.UID_Person | Should -BeExactly $pCol.UID_Person
         }
+
+        It 'Can create a new entity in memory' {
+
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $p = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName} -Unsaved
+            $p.IsLoaded | Should -Be $false
+
+            $pCol = Get-Entity -Type 'Person' -Filter "Lastname = '$randomLastName'"
+            $pCol.Count | Should -BeExactly 0
+
+            $uow = New-UnitOfWork
+            $p | Add-UnitOfWorkEntity -UnitOfWork $uow
+            Save-UnitOfWork $uow
+
+            $pCol = Get-Entity -Type 'Person' -Filter "Lastname = '$randomLastName'"
+            $pCol.Count | Should -BeExactly 1
+
+            $p.UID_Person | Should -BeExactly $pCol.UID_Person
+        }
+
     }
 
     Context 'Modify entities' {
@@ -110,6 +135,20 @@ Describe 'Entity' {
             $pM.EntryDate | Should -BeExactly $pV.EntryDate
         }
 
+        It 'Can modify person VI' {
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName; 'EntryDate' = [DateTime]::Today.AddDays(-10)}
+            $pO.CustomProperty01 = 'Test'
+
+            $uow = New-UnitOfWork
+            $pO | Add-UnitOfWorkEntity -UnitOfWork $uow
+            Save-UnitOfWork $uow
+
+            $pV = Get-Entity -Type 'Person' -Filter "Lastname = '$randomLastName'"
+
+            $pV.CustomProperty01 | Should -BeExactly 'Test'
+        }
+
     }
 
     Context 'Remove entities' {
@@ -147,6 +186,37 @@ Describe 'Entity' {
 
         It 'Get count with invalid filter' {
             Get-TableCount -Name 'DialogDatabase' -Filter '1=2' | Should -BeExactly 0
+        }
+
+    }
+
+    Context 'Test-Entity' {
+
+        It 'Can test entity existence by entity' {
+            Get-Entity -Type 'DialogDatabase' | Test-Entity | Should -be $true
+        }
+
+        It 'Can test entity existence by XObjectKey' {
+            $e0 = Get-Entity -Type 'DialogDatabase'
+            Test-Entity -Identity $e0.XObjectKey | Should -be $true
+        }
+
+        It 'Can test entity existence by uid' {
+            $e0 = Get-Entity -Type 'DialogDatabase'
+            Test-Entity -Type 'DialogDatabase' -Identity $e0.UID_Database | Should -be $true
+        }
+
+        It 'Can test entity existence by wrong XObjectKey' {
+            $e0 = Get-Entity -Type 'DialogDatabase'
+            Test-Entity -Identity $($e0.XObjectKey).Replace('T','X') | Should -be $false
+        }
+
+        It 'Can test entity existence by wrong uid' {
+            Test-Entity -Type 'FooBar' -Identity 'Unknown' | Should -be $false
+        }
+
+        It 'Can test in memory entities' {
+            New-Entity -Type 'Person' -Properties @{'FirstName' = 'Foo'; 'LastName' = 'Bar'} -Unsaved | Test-Entity | Should -be $false
         }
 
     }

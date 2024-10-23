@@ -1,13 +1,25 @@
+Param (
+    [parameter(Mandatory = $false, HelpMessage = 'Connectionstring to an Identity Manager database')]
+    [ValidateNotNullOrEmpty()]
+    [string] $ConectionString = 'Data Source=127.0.0.1;Initial Catalog=DB;Integrated Security=False;User ID=sa;Password=***;Pooling=False',
+
+    [parameter(Mandatory = $false, HelpMessage = 'The authentication to use')]
+    [ValidateNotNullOrEmpty()]
+    [string] $ProductFilePath = 'D:\ClientTools',
+
+    [parameter(Mandatory = $false, HelpMessage = 'The base path to load the Identity Manager product files from.')]
+    [ValidateNotNullOrEmpty()]
+    [string] $AuthenticationString = 'Module=DialogUser;User=viadmin;Password=***'
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $DebugPreference = 'Continue' # Valid values are 'SilentlyContinue' -> Don't show any debug messages; Continue -> Show debug messages.
 $ProgressPreference = 'SilentlyContinue'
 
-$ConectionString = 'Data Source=127.0.0.1,1433;Initial Catalog=DB;Integrated Security=False;User ID=sa;Password=***;Pooling=False'
-$ProductFilePath = 'D:\ClientTools'
-$AuthenticationString = 'Module=DialogUser;User=viadmin;Password=***'
+Import-Module $(Join-Path "$PSScriptRoot" ".." "PSIdentityManagerUtils\PSIdentityManagerUtils.psm1")
+
 $ModulesToAdd = 'QER'
-Import-Module "$PSScriptRoot\..\PSIdentityManagerUtils\PSIdentityManagerUtils.psm1"
 
 function Resolve-Exception {
   [CmdletBinding()]
@@ -72,7 +84,7 @@ $StartTimeTotal = $(get-date)
 Write-Debug "Session for $($Session.Display)"
 
 # For easy Fakedata we use Bogus - get it from https://github.com/bchavez/Bogus
-$FileToLoad = "$PSScriptRoot\Bogus.dll"
+$FileToLoad = Join-Path "$PSScriptRoot" 'Bogus.dll'
 try {
     [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
     $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
@@ -83,7 +95,7 @@ try {
 
 # For easy QR Codes we use https://www.nuget.org/packages/QRCoder/1.4.3
 # https://github.com/codebude/QRCoder/
-$FileToLoad = "$PSScriptRoot\QRCoder.dll"
+$FileToLoad = Join-Path "$PSScriptRoot" 'QRCoder.dll'
 try {
     [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
     $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
@@ -157,6 +169,7 @@ function New-Identities {
             -Building $Faker.Address.BuildingNumber() `
             -CustomProperty01 'Fakedata' `
             -JpegPhoto $byteArray `
+            -DialogUserPassword 'UnsecureP@ssw0rd' `
             -Unsaved
 
         $p
@@ -197,8 +210,11 @@ function New-Departments {
       -UID_PersonHeadSecond $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) `
       -UID_RulerContainer 'QER-AEROLE-STRUCTADMIN-RULER' `
       -UID_RulerContainerIT 'QER-AEROLE-STRUCTADMIN-RULERIT' `
-      -UID_OrgAttestator 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR' `
       -Unsaved
+
+      if ($null -ne $Department.PSObject.Members['UID_OrgAttestator']) {
+        $Department.UID_OrgAttestator = 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR'
+      }
 
     $Department
   }
@@ -237,8 +253,11 @@ function New-CostCenters {
       -UID_PersonHeadSecond $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) `
       -UID_RulerContainer 'QER-AEROLE-STRUCTADMIN-RULER' `
       -UID_RulerContainerIT 'QER-AEROLE-STRUCTADMIN-RULERIT' `
-      -UID_OrgAttestator 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR' `
       -Unsaved
+
+      if ($null -ne $ProfitCenter.PSObject.Members['UID_OrgAttestator']) {
+        $ProfitCenter.UID_OrgAttestator = 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR'
+      }
 
     $ProfitCenter
   }
@@ -285,8 +304,11 @@ function New-Locations {
       -UID_PersonHeadSecond $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) `
       -UID_RulerContainer 'QER-AEROLE-STRUCTADMIN-RULER' `
       -UID_RulerContainerIT 'QER-AEROLE-STRUCTADMIN-RULERIT' `
-      -UID_OrgAttestator 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR' `
       -Unsaved
+
+      if ($null -ne $Locality.PSObject.Members['UID_OrgAttestator']) {
+        $Locality.UID_OrgAttestator = 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR'
+      }
 
     $Locality
   }
@@ -714,10 +736,13 @@ $ItShop = New-ITShopOrg -Ident_Org 'FakeShop' `
   -UID_ProfitCenter $Faker.Random.ArrayElement($($FakeData.CostCenters).UID_ProfitCenter) `
   -UID_Department $Faker.Random.ArrayElement($($FakeData.Departments).UID_Department) `
   -UID_Locality $Faker.Random.ArrayElement($($FakeData.Locations).UID_Locality) `
-  -UID_OrgAttestator 'ATT-AEROLE-ITSHOPADMIN-ATTESTATOR' `
   -Description $Faker.Lorem.Sentence(3, 5) `
   -CustomProperty01 'Fakedata' `
   -Unsaved
+
+if ($null -ne $ItShop.PSObject.Members['UID_OrgAttestator']) {
+  $ItShop.UID_OrgAttestator = 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR'
+}
 
 # Customer Folder
 $ItShopCustomer = New-ITShopOrg -Ident_Org 'Customers of FakeShop' `
@@ -755,9 +780,12 @@ $ItShopShelf = New-ITShopOrg -Ident_Org 'Shelf for FakeShop' `
   -UID_Department $Faker.Random.ArrayElement($($FakeData.Departments).UID_Department) `
   -UID_Locality $Faker.Random.ArrayElement($($FakeData.Locations).UID_Locality) `
   -Description $Faker.Lorem.Sentence(3, 5) `
-  -UID_OrgAttestator 'ATT-AEROLE-ITSHOPADMIN-ATTESTATOR' `
   -CustomProperty01 'Fakedata' `
   -Unsaved
+
+if ($null -ne $ItShopShelf.PSObject.Members['UID_OrgAttestator']) {
+  $ItShopShelf.UID_OrgAttestator = 'ATT-AEROLE-STRUCTADMIN-ATTESTATOR'
+}
 
 $ItShopShelf.UID_ParentITShopOrg = $ItShop.UID_ITShopOrg
 
@@ -907,11 +935,13 @@ $CommonAeRoles = @(
 )
 
 $CommonAeRoles | ForEach-Object {
-  if (Get-Entity -Type 'AERole' -Identity $_) {
-    # Base roles\Administrators
-    $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole $_ `
-      -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
-  }
+    if (Test-Entity -Type 'AERole' -Identity $_) {
+      # Base roles\Administrators
+      $FakeData.PersonInAERoles += New-PersonInAERole -UID_AERole $_ `
+        -UID_Person $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) -Unsaved
+    } else {
+      Write-Debug "Skip assignment of '$_'"
+    }
 }
 
 $FakeData.PersonInAERoles | Add-UnitOfWorkEntity -UnitOfWork $uow

@@ -8,7 +8,6 @@ Describe 'New-IdentityManagerSession' {
             { New-IdentityManagerSession `
                 -ConnectionString $Global:connectionString `
                 -AuthenticationString $Global:authenticationString `
-                -FactoryName $Global:factory `
                 -ProductFilePath $Global:ProductFilePath `
                 -ModulesToAdd $Global:modulesToAdd
             } | Should -Not -Throw
@@ -19,7 +18,6 @@ Describe 'New-IdentityManagerSession' {
             { New-IdentityManagerSession `
                 -ConnectionString $Global:connectionString `
                 -AuthenticationString $Global:authenticationString `
-                -FactoryName $Global:factory `
                 -ProductFilePath $Global:ProductFilePath `
                 -ModulesToAdd $Global:modulesToAdd
             } | Should -Throw '*There is already a connection with prefix*'
@@ -40,7 +38,6 @@ Describe 'New-IdentityManagerSession' {
             $sess = New-IdentityManagerSession `
                 -ConnectionString $Global:connectionString `
                 -AuthenticationString $Global:authenticationString `
-                -FactoryName $Global:factory `
                 -ProductFilePath $Global:ProductFilePath `
                 -ModulesToAdd $Global:modulesToAdd `
                 -Prefix 'UT'
@@ -58,7 +55,6 @@ Describe 'New-IdentityManagerSession' {
             { New-IdentityManagerSession `
                 -ConnectionString $Global:connectionString `
                 -AuthenticationString $Global:authenticationString `
-                -FactoryName $Global:factory `
                 -ProductFilePath $Global:ProductFilePath `
                 -SkipFunctionGeneration
             } | Should -Not -Throw
@@ -74,7 +70,6 @@ Describe 'New-IdentityManagerSession' {
             { New-IdentityManagerSession `
                 -ConnectionString $Global:connectionString `
                 -AuthenticationString $Global:authenticationString `
-                -FactoryName $Global:factory `
                 -ProductFilePath $Global:ProductFilePath `
                 -ModulesToSkip $Global:modulesToSkip `
             } | Should -Not -Throw
@@ -90,7 +85,6 @@ Describe 'New-IdentityManagerSession' {
             $sess = New-IdentityManagerSession `
                 -ConnectionString $Global:connectionString `
                 -AuthenticationString $Global:authenticationString `
-                -FactoryName $Global:factory `
                 -ProductFilePath $Global:ProductFilePath `
                 -SkipFunctionGeneration
             $sess | Should -Not -BeNullOrEmpty
@@ -104,7 +98,6 @@ Describe 'New-IdentityManagerSession' {
             $sess = New-IdentityManagerSession `
                 -ConnectionString $Global:connectionString `
                 -AuthenticationString $Global:authenticationString `
-                -FactoryName $Global:factory `
                 -ProductFilePath $Global:ProductFilePath `
                 -SkipFunctionGeneration
             $sess | Should -Not -BeNullOrEmpty
@@ -124,7 +117,6 @@ Describe 'New-IdentityManagerSession' {
                 New-IdentityManagerSession `
                 -ConnectionString $Global:connectionString `
                 -AuthenticationString $Global:authenticationString `
-                -FactoryName $Global:factory `
                 -ProductFilePath $Global:ProductFilePath `
                 -ModulesToAdd $Global:modulesToAdd `
                 -Prefix S1
@@ -132,7 +124,6 @@ Describe 'New-IdentityManagerSession' {
                 New-IdentityManagerSession `
                 -ConnectionString $Global:connectionString2 `
                 -AuthenticationString $Global:authenticationString2 `
-                -FactoryName $Global:factory `
                 -ProductFilePath $Global:ProductFilePath2 `
                 -ModulesToAdd $Global:modulesToAdd `
                 -Prefix S2
