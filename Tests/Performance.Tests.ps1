@@ -8,7 +8,6 @@ Describe 'Entity performance' {
         New-IdentityManagerSession `
             -ConnectionString $Global:connectionString `
             -AuthenticationString $Global:authenticationString `
-            -FactoryName $Global:factory `
             -ProductFilePath $Global:ProductFilePath `
             -SkipFunctionGeneration
     }
@@ -155,7 +154,6 @@ Describe 'Typped wrapper performance' {
         New-IdentityManagerSession `
             -ConnectionString $Global:connectionString `
             -AuthenticationString $Global:authenticationString `
-            -FactoryName $Global:factory `
             -ProductFilePath $Global:ProductFilePath `
             -ModulesToAdd $Global:modulesToAdd
     }

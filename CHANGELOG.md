@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.0.20] - 2024-10-23
+
+### Fixes
+
+### Testing
+
+- Add tests for Test-Entity method
+- More tests for modification of entities
+
+### Miscellaneous
+
+- Add Test-Entity method to check existence of entities
+- Remove parameter FactoryName from New-IdentityManagerSession. It can be detected automatically from connectionstring.
+- Minor improvements for FillDbWithFakeData.ps1
+
 ## [0.0.19] - 2024-06-18
 
 ### Fixes

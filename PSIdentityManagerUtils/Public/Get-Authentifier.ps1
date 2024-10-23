@@ -4,7 +4,7 @@ function Get-Authentifier {
     [parameter(Mandatory = $true, Position = 0, HelpMessage = 'Connectionstring to an Identity Manager database')]
     [ValidateNotNullOrEmpty()]
     [String] $ConnectionString,
-    [Parameter(Mandatory = $false, HelpMessage = 'The connection factory to use')]
+    [Parameter(Mandatory = $false, HelpMessage = 'The connection factory to use. This parameter is obsolete.')]
     [ValidateSet('VI.DB.ViSqlFactory', 'VI.DB.Oracle.ViOracleFactory', 'QBM.AppServer.Client.ServiceClientFactory')]
     [String] $FactoryName = 'VI.DB.ViSqlFactory',
     [parameter(Mandatory = $false, HelpMessage = 'The base path to load the Identity Manager product files from.')]
@@ -26,6 +26,9 @@ function Get-Authentifier {
 
   Process {
     try {
+
+      $FactoryName = Get-SqlFactoryFromConnectionString $ConnectionString
+
       if ($FactoryName -eq 'QBM.AppServer.Client.ServiceClientFactory') {
         [System.AppDomain]::CurrentDomain.add_AssemblyResolve($Global:OnAssemblyResolve)
         [System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, 'QBM.AppServer.Client.dll')) | Out-Null

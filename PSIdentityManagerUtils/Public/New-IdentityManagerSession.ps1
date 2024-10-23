@@ -1,13 +1,13 @@
 function New-IdentityManagerSession {
   [CmdletBinding()]
   Param (
-    [parameter(Mandatory = $true, HelpMessage = 'Connectionstring to an Identity Manager database')]
+    [parameter(Mandatory = $true, Position = 0, HelpMessage = 'Connectionstring to an Identity Manager database')]
     [ValidateNotNullOrEmpty()]
     [String] $ConnectionString,
-    [parameter(Mandatory = $true, HelpMessage = 'The authentication to use')]
+    [parameter(Mandatory = $true, Position = 1, HelpMessage = 'The authentication to use')]
     [ValidateNotNullOrEmpty()]
     [String] $AuthenticationString,
-    [Parameter(Mandatory = $false, HelpMessage = 'The connection factory to use')]
+    [Parameter(Mandatory = $false, HelpMessage = 'The connection factory to use. This parameter is obsolete.')]
     [ValidateSet('VI.DB.ViSqlFactory', 'VI.DB.Oracle.ViOracleFactory', 'QBM.AppServer.Client.ServiceClientFactory')]
     [String] $FactoryName = 'VI.DB.ViSqlFactory',
     [parameter(Mandatory = $false, HelpMessage = 'The base path to load the Identity Manager product files from.')]
@@ -38,6 +38,8 @@ function New-IdentityManagerSession {
       if ($Global:imsessions.Contains($Prefix)) {
         throw "[!] There is already a connection with prefix '$Prefix' defined. Please specify another prefix."
       }
+
+      $FactoryName = Get-SqlFactoryFromConnectionString $ConnectionString
 
       if ($FactoryName -eq 'QBM.AppServer.Client.ServiceClientFactory') {
         [System.AppDomain]::CurrentDomain.add_AssemblyResolve($Global:OnAssemblyResolve)

@@ -149,8 +149,7 @@ It is recommended to use the Application Server connection!
 After the import, a list of supported authentication modules can be shown. You can find more information about authentication modules in the [documentation](https://support.oneidentity.com/technical-documents/identity-manager/9.2/authorization-and-authentication-guide/17#TOPIC-2083671). Later, [a first session](#a-first-session) can be established by choosing one of the supported authentication modules.
 
     $connectionString = 'url=https://<URL>/AppServer/'
-    $factory = 'QBM.AppServer.Client.ServiceClientFactory'
-    Get-Authentifier -ConnectionString $connectionString -FactoryName $factory
+    Get-Authentifier -ConnectionString $connectionString
 
 [:top:](#table-of-contents)
 
@@ -183,9 +182,8 @@ To completly disable the wrapper function generation use ```SkipFunctionGenerati
 #### Application server connection
 
     $connectionString = 'url=https://<URL>/AppServer/'
-    $factory = 'QBM.AppServer.Client.ServiceClientFactory'
     $authenticationString = 'Module=DialogUser;User=viadmin;Password=<Password>'
-    New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -FactoryName $factory
+    New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString
 
 :warning: Hint
 
@@ -195,7 +193,7 @@ To deal with special certificate requirements you can provide some extra argumen
 
 As an example to skip wrapper function generation for certain tables / objects use:
 
-    New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -FactoryName $factory -ModulesToSkip 'EBS','CSM','UCI','AAD'
+    New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -ModulesToSkip 'EBS','CSM','UCI','AAD'
 
 [:top:](#table-of-contents)
 
@@ -483,6 +481,8 @@ The Identity Manager powershell utils allows you to deal with multiple database 
     New-IdentityManagerSession -ConnectionString $connectionString -AuthenticationString $authenticationString -Prefix db1
 
 With that, the automatically generated functions will get there prefix as well. E.g.: ```New-Person``` will become ```New-db1Person```.
+
+Using different versions of Identity Manager is not supported and the Identity Manager powershell utils must not be used as a transport tool.
 
 [:top:](#table-of-contents)
 

@@ -6,7 +6,6 @@ Describe 'Scripting' {
         New-IdentityManagerSession `
             -ConnectionString $Global:connectionString `
             -AuthenticationString $Global:authenticationString `
-            -FactoryName $Global:factory `
             -ProductFilePath $Global:ProductFilePath `
             -SkipFunctionGeneration
     }
