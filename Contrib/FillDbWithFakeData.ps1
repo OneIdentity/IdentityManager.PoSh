@@ -949,7 +949,11 @@ Save-UnitOfWork $uow
 $et = new-timespan $st $(get-date)
 Write-Debug "Done in $($et.TotalSeconds) seconds"
 
+Write-Debug "Closing connection"
+$st = $(get-date)
 Remove-IdentityManagerSession -Session $Session
+$et = new-timespan $st $(get-date)
+Write-Debug "Done in $($et.TotalSeconds) seconds"
 
 $ElapsedTimeTotal = new-timespan $StartTimeTotal $(get-date)
 Write-Debug "[*] Total runtime: $($ElapsedTimeTotal.TotalSeconds) seconds"
