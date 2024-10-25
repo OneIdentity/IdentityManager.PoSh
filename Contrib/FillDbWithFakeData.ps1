@@ -161,7 +161,7 @@ function New-Identities {
         # Fehlerkorrekturlevel / ECCLevel: L (7%), M (15%), Q (25%) und H (30%)
         $qrCodeData = $qrGenerator.CreateQrCode($TextToEncode, 'M')
         $qrCode = New-Object -TypeName QRCoder.PngByteQRCode -ArgumentList ($qrCodeData)
-        $byteArray = $qrCode.GetGraphic(5)
+        $byteArray = $qrCode.GetGraphic(5, ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
 
         $p = New-Person `
             -FirstName $FirstName `
@@ -355,7 +355,7 @@ function New-AccProducts {
     # Fehlerkorrekturlevel / ECCLevel: L (7%), M (15%), Q (25%) und H (30%)
     $qrCodeData = $qrGenerator.CreateQrCode($TextToEncode, 'M')
     $qrCode = New-Object -TypeName QRCoder.PngByteQRCode -ArgumentList ($qrCodeData)
-    $byteArray = $qrCode.GetGraphic(5)
+    $byteArray = $qrCode.GetGraphic(5, ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
     
     $AccProduct = New-AccProduct -Ident_AccProduct $ProductName `
       -Description $Faker.Lorem.Sentence(3, 5) `
@@ -395,7 +395,7 @@ function New-AccProductGroups {
   # Fehlerkorrekturlevel / ECCLevel: L (7%), M (15%), Q (25%) und H (30%)
   $qrCodeData = $qrGenerator.CreateQrCode($TextToEncode, 'M')
   $qrCode = New-Object -TypeName QRCoder.PngByteQRCode -ArgumentList ($qrCodeData)
-  $byteArray = $qrCode.GetGraphic(5)
+  $byteArray = $qrCode.GetGraphic(5, ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
   
   $AccProductGroup = New-AccProductGroup -Ident_AccProductGroup $ProductName `
     -Description $Faker.Lorem.Sentence(3, 5) `
