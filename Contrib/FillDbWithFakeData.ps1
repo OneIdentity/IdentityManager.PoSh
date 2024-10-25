@@ -9,17 +9,30 @@ Param (
 
     [parameter(Mandatory = $false, HelpMessage = 'The base path to load the Identity Manager product files from.')]
     [ValidateNotNullOrEmpty()]
-    [string] $AuthenticationString = 'Module=DialogUser;User=viadmin;Password=***'
+    [string] $AuthenticationString = 'Module=DialogUser;User=viadmin;Password=***',
+
+    [parameter(Mandatory = $false, HelpMessage = 'Seed value to allow generation of reproducible data')]
+    [int] $Seed = 252084
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$DebugPreference = 'Continue' # Valid values are 'SilentlyContinue' -> Don't show any debug messages; Continue -> Show debug messages.
+$InformationPreference = 'Continue'
+$DebugPreference = 'SilentlyContinue' # Valid values are 'SilentlyContinue' -> Don't show any debug messages; Continue -> Show debug messages.
 $ProgressPreference = 'SilentlyContinue'
 
 Import-Module $(Join-Path "$PSScriptRoot" ".." "PSIdentityManagerUtils\PSIdentityManagerUtils.psm1")
 
 $ModulesToAdd = 'QER'
+
+$numberOfIdentities = 250
+$minSubordinates = 5
+$maxSubordinates = 15
+$rootMaxDirectReports = [Math]::Min([Math]::Ceiling($numberOfIdentities * 0.1), 7) # Size of ELT team
+$numberOfDepartments = 20
+$numberOfCostCenters = 40
+$numberOfLocations = 20
+$NumberOfItShopProducts = 1000
 
 function Resolve-Exception {
   [CmdletBinding()]
@@ -81,7 +94,7 @@ $Session = New-IdentityManagerSession `
 
 $StartTimeTotal = $(get-date)
 
-Write-Debug "Session for $($Session.Display)"
+Write-Information "Session for $($Session.Display)"
 
 # For easy Fakedata we use Bogus - get it from https://github.com/bchavez/Bogus
 $FileToLoad = Join-Path "$PSScriptRoot" 'Bogus.dll'
@@ -133,7 +146,7 @@ function New-Identities {
         [int] $Quantity
     )
 
-    Write-Debug "Creating $Quantity identity records in memory"
+    Write-Information "Creating $Quantity identity records in memory"
 
     $StartTime = $(get-date)
     for ($i = 1; $i -le $Quantity; $i++)
@@ -194,7 +207,7 @@ function New-Departments {
       [PSCustomObject[]]$FakeData
   )
 
-  Write-Debug "Creating $Quantity department records in memory"
+  Write-Information "Creating $Quantity department records in memory"
 
   $StartTime = $(get-date)
   for ($i = 1; $i -le $Quantity; $i++)
@@ -237,7 +250,7 @@ function New-CostCenters {
       [PSCustomObject[]]$FakeData
   )
 
-  Write-Debug "Creating $Quantity cost center records in memory"
+  Write-Information "Creating $Quantity cost center records in memory"
 
   $StartTime = $(get-date)
   for ($i = 1; $i -le $Quantity; $i++)
@@ -280,7 +293,7 @@ function New-Locations {
       [PSCustomObject[]]$FakeData
   )
 
-  Write-Debug "Creating $Quantity location records in memory"
+  Write-Information "Creating $Quantity location records in memory"
 
   $StartTime = $(get-date)
   for ($i = 1; $i -le $Quantity; $i++)
@@ -331,7 +344,7 @@ function New-AccProducts {
       [PSCustomObject[]]$FakeData
   )
 
-  Write-Debug "Creating $Quantity AccProduct records in memory"
+  Write-Information "Creating $Quantity AccProduct records in memory"
 
   $StartTime = $(get-date)
   for ($i = 0; $i -lt $Quantity; $i++)
@@ -372,7 +385,7 @@ function New-AccProductGroups {
       [PSCustomObject[]]$FakeData
   )
 
-  Write-Debug "Creating AccProductGroup record in memory"
+  Write-Information "Creating AccProductGroup record in memory"
 
   $StartTime = $(get-date)
 
@@ -412,7 +425,7 @@ function New-ProductOwners {
       [PSCustomObject[]]$FakeData
   )
 
-  Write-Debug "Creating $Quantity ProductOwner records in memory"
+  Write-Information "Creating $Quantity ProductOwner records in memory"
   $StartTime = $(get-date)
   for ($i = 0; $i -lt $Quantity; $i++)
   {
@@ -450,7 +463,7 @@ function New-QERReuses {
       [PSCustomObject[]]$FakeData
   )
 
-  Write-Debug "Creating $Quantity QERReuse records in memory"
+  Write-Information "Creating $Quantity QERReuse records in memory"
 
   $StartTime = $(get-date)
   for ($i = 0; $i -lt $Quantity; $i++)
@@ -487,7 +500,7 @@ function New-ITShopOrgHasQERReuses {
       [string] $UID_ITShopOrg
   )
 
-  Write-Debug "Creating $Quantity QERReuse records in memory"
+  Write-Information "Creating $Quantity ITShop <-> QERReuse assignment records in memory"
 
   $StartTime = $(get-date)
   for ($i = 0; $i -lt $Quantity; $i++)
@@ -518,49 +531,74 @@ function New-PersonInAERoles  {
       [PSCustomObject[]]$FakeData
   )
 
-  Write-Debug "Creating $Quantity PersonInAERole records for every AERole in memory"
+  Write-Information "Creating $Quantity PersonInAERole records for every AERole in memory"
 
   $StartTime = $(get-date)
   for ($i = 0; $i -lt $FakeData.ProductOwners.Count; $i++)
   {
-    $UniquePersonInAERoles = @{}
+    $RandomPersons = $FakeData.Identities | Get-Random -SetSeed $($Seed * $i) -Count $Quantity
 
-    for ($j = 0; $j -lt $Quantity; $j++)
-    {
-      $RandomPerson = $FakeData.Identities | Get-Random
+    $RandomPersons | ForEach-Object {
       $PersonInAERole = New-PersonInAERole -UID_AERole $FakeData.ProductOwners[$i].UID_AERole `
-        -UID_Person $RandomPerson.UID_Person `
+        -UID_Person $_.UID_Person `
         -Unsaved
-
-      $key = $PersonInAERole.UID_Person + '|' + $PersonInAERole.UID_AERole
-      if (-not $UniquePersonInAERoles.ContainsKey($key)) {
-        $UniquePersonInAERoles.Add($key, $key)
-        $PersonInAERole
-      } else {
-        $j--
-      }
+      $PersonInAERole
     }
-
-    $UniquePersonInAERoles.Clear()
   }
   $ElapsedTime = new-timespan $StartTime $(get-date)
   Write-Debug "Done in $($elapsedTime.TotalSeconds) seconds"
 }
 
+function HasCircularReference {
+  param (
+      $subordinate,
+      $supervisor
+  )
+
+  while ($supervisor) {
+    if ($supervisor.UID_Person -eq $subordinate.UID_Person) {
+      return $true
+    }
+    $t = $FakeData.Identities | Where-Object {$_.UID_Person -eq $supervisor.UID_PersonHead}
+    $supervisor = $t
+  }
+  return $false
+}
+
+function GetGaussianRandom {
+  param (
+      [double] $mean,
+      [double] $stdDev,
+      [int] $min,
+      [int] $max
+  )
+
+  do {
+    $u1 = [System.Random]::new($Seed).NextDouble()
+    $u2 = [System.Random]::new($Seed * $u1).NextDouble()
+    $randStdNormal = [Math]::Sqrt(-2 * [Math]::Log($u1)) * [Math]::Sin(2 * [Math]::PI * $u2)
+    $randNormal = [Math]::Round($mean + $stdDev * $randStdNormal)
+
+  } while ($randNormal -lt $min -or $randNormal -gt $max)
+
+  return [int]$randNormal
+}
+
+[Bogus.Randomizer]::Seed = [System.Random]::new($Seed)
 $Faker = [Bogus.Faker]::new('en')
 $uow = New-UnitOfWork -Session $Session
 
 # Create Identities
-$FakeData.Identities = New-Identities -Session $Session -Faker $Faker -Quantity 100
+$FakeData.Identities = New-Identities -Session $Session -Faker $Faker -Quantity $numberOfIdentities
 
 # Create Departments
-$FakeData.Departments = New-Departments -Session $Session -Faker $Faker -Quantity 20 -FakeData $FakeData
+$FakeData.Departments = New-Departments -Session $Session -Faker $Faker -Quantity $numberOfDepartments -FakeData $FakeData
 
 # Create cost centers
-$FakeData.CostCenters = New-CostCenters -Session $Session -Faker $Faker -Quantity 20 -FakeData $FakeData
+$FakeData.CostCenters = New-CostCenters -Session $Session -Faker $Faker -Quantity $numberOfCostCenters -FakeData $FakeData
 
 # Create locations
-$FakeData.Locations = New-Locations -Session $Session -Faker $Faker -Quantity 20 -FakeData $FakeData
+$FakeData.Locations = New-Locations -Session $Session -Faker $Faker -Quantity $numberOfLocations -FakeData $FakeData
 
 # Wire Departments <--> Cost Centers
 for ($i = 0; $i -lt $FakeData.Departments.Count; $i++)
@@ -609,7 +647,7 @@ $FakeData.Locations |Where-Object UID_ProfitCenter -eq '' | ForEach-Object {
 #
 # Persist data into database - this MUST be DONE HERE otherwise we cannot find the foreign keys
 #
-Write-Debug "[*] Persisting data stage 1"
+Write-Information "[*] Persisting data stage 1"
 $st = $(get-date)
 Write-Debug "Adding identities to unit of work"
 $FakeData.Identities | Add-UnitOfWorkEntity -UnitOfWork $uow
@@ -635,13 +673,15 @@ $et = new-timespan $st $(get-date)
 Write-Debug "Done in $($et.TotalSeconds) seconds"
 
 $st = $(get-date)
-Write-Debug "[*] Wire Identities with Cost Centers, Departments, Locations, Managers (direct and indirect)"
-# Wire Identities with Cost Centers, Departments, Managers
+Write-Information "[*] Wire Identities with Cost Centers, Departments, Locations, Managers (direct and indirect)"
+# Wire Identities with Cost Centers, Departments
 # and add Identities additionally to Cost Centers, Departments
 for ($i = 0; $i -lt $FakeData.Identities.Count; $i++)
 {
   # Reload entities to allow further updates
   $FakeData.Identities[$i] = $FakeData.Identities[$i].Reload()
+
+  $FakeData.Identities[$i] | Add-Member -NotePropertyName "Subordinates" -NotePropertyValue @()
 
   # Assign a Cost Center to every identity
   $UID_ProfitCenter = $Faker.Random.ArrayElement($($FakeData.CostCenters).UID_ProfitCenter)
@@ -657,13 +697,6 @@ for ($i = 0; $i -lt $FakeData.Identities.Count; $i++)
 
   # Give Identities a fixed default email address
   $FakeData.Identities[$i].DefaultEMailAddress = $FakeData.Identities[$i].CentralAccount + '@fakedata.local'
-
-  # Assign a manager to the identity
-  $UID_PersonHead = $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person)
-  # Exclude assignments of ourself
-  if ($UID_PersonHead -ne $FakeData.Identities[$i].UID_Person) {
-    $FakeData.Identities[$i].UID_PersonHead = $UID_PersonHead
-  }
 
   # Do additional assignments only for every 10% of identity
   if (0 -ne $($i % ($FakeData.Identities.Count * 0.1))) {
@@ -719,6 +752,58 @@ for ($i = 0; $i -lt $FakeData.Identities.Count; $i++)
   }
 
 }
+
+# Add managers to identities start
+$remainingPeople = $FakeData.Identities[1..($FakeData.Identities.Count - 1)]
+$availableSupervisors = @($FakeData.Identities[0])
+
+while ($FakeData.Identities[0].Subordinates.Count -lt $rootMaxDirectReports -and $remainingPeople.Count -gt 0) {
+    $person = $remainingPeople[0]
+    $remainingPeople = $remainingPeople[1..($remainingPeople.Count - 1)]
+
+    $FakeData.Identities[0].Subordinates += $person
+    $person.UID_PersonHead = $FakeData.Identities[0].UID_Person
+    $availableSupervisors += $person
+}
+
+$j = $remainingPeople.Count
+
+try {
+    foreach ($person in $remainingPeople) {
+        $assigned = $false
+        while (-not $assigned) {
+            $meanSubordinates = [Math]::Ceiling($numberOfIdentities * 0.1)
+            $stdDevSubordinates = [Math]::Ceiling($numberOfIdentities * 0.03)
+            $desiredSubordinates = GetGaussianRandom -mean $meanSubordinates -stdDev $stdDevSubordinates -min $minSubordinates -max $maxSubordinates
+
+            $potentialSupervisors = $availableSupervisors | Where-Object {
+                $_.UID_Person -ne $FakeData.Identities[0].UID_Person -and $_.Subordinates.Count -lt $maxSubordinates
+            } | Where-Object { !(HasCircularReference -subordinate $person -supervisor $_) }
+
+            if (-Not ('Count' -In $potentialSupervisors.PSobject.Properties.Name)) {
+                $newSupervisor = $availableSupervisors |Get-Random -SetSeed $($Seed * $j + $j)
+                $newSupervisor.Subordinates += $person
+                $person.UID_PersonHead = $newSupervisor.UID_Person
+                $availableSupervisors += $person
+                $assigned = $true
+            } else {
+                $supervisor = $potentialSupervisors |Get-Random -SetSeed $($Seed * $j)
+                $supervisor.Subordinates += $person
+                $person.UID_PersonHead = $supervisor.UID_Person
+                $assigned = $true
+
+                if ($supervisor.Subordinates.Count -ge $desiredSubordinates) {
+                    $availableSupervisors = $availableSupervisors -ne $supervisor
+                }
+            }
+        }
+
+        $j--
+    }
+} catch {
+    Resolve-Exception -ExceptionObject $PSitem
+}
+# Add managers to identities end
 
 $et = new-timespan $st $(get-date)
 Write-Debug "Done in $($et.TotalSeconds) seconds"
@@ -786,17 +871,16 @@ $ITShopOrgHasPWODecisionMethod = New-ITShopOrgHasPWODecisionMethod -UID_ITShopOr
   -UID_PWODecisionMethod 'QER-9F9FF8FD4D2FCB4E916B45990E8765B7' `
   -Unsaved
 
-$ItShopQuantity = 1000 # They should be the same
 $FakeData.AccProductGroup = New-AccProductGroups -Session $Session -Faker $Faker -FakeData $FakeData
-$FakeData.AccProducts = New-AccProducts -Session $Session -Faker $Faker -Quantity $ItShopQuantity -FakeData $FakeData
-$FakeData.ProductOwners = New-ProductOwners -Session $Session -Faker $Faker -Quantity $ItShopQuantity -FakeData $FakeData
-$FakeData.QERReuses = New-QERReuses -Session $Session -Faker $Faker -Quantity $ItShopQuantity -FakeData $FakeData
-$FakeData.ITShopOrgHasQERReuse = New-ITShopOrgHasQERReuses -Session $Session -Faker $Faker -Quantity $ItShopQuantity -FakeData $FakeData -UID_ITShopOrg $ItShopShelf.UID_ITShopOrg
+$FakeData.AccProducts = New-AccProducts -Session $Session -Faker $Faker -Quantity $NumberOfItShopProducts -FakeData $FakeData
+$FakeData.ProductOwners = New-ProductOwners -Session $Session -Faker $Faker -Quantity $NumberOfItShopProducts -FakeData $FakeData
+$FakeData.QERReuses = New-QERReuses -Session $Session -Faker $Faker -Quantity $NumberOfItShopProducts -FakeData $FakeData
+$FakeData.ITShopOrgHasQERReuse = New-ITShopOrgHasQERReuses -Session $Session -Faker $Faker -Quantity $NumberOfItShopProducts -FakeData $FakeData -UID_ITShopOrg $ItShopShelf.UID_ITShopOrg
 
 #
 # Persist data into database
 #
-Write-Debug "[*] Persisting data stage 2"
+Write-Information "[*] Persisting data stage 2"
 $st = $(get-date)
 Write-Debug "Adding identities to unit of work"
 $FakeData.Identities | Add-UnitOfWorkEntity -UnitOfWork $uow
@@ -821,14 +905,29 @@ $FakeData.IdentityInLocality | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = new-timespan $st $(get-date)
 Write-Debug "Done in $($et.TotalSeconds) seconds"
 
+$st = $(get-date)
+Write-Debug "Adding itshop orgs to unit of work"
 $ItShop | Add-UnitOfWorkEntity -UnitOfWork $uow
 $ItShopCustomer | Add-UnitOfWorkEntity -UnitOfWork $uow
 $ItShopShelf | Add-UnitOfWorkEntity -UnitOfWork $uow
 $ITShopOrgHasPWODecisionMethod | Add-UnitOfWorkEntity -UnitOfWork $uow
 $DynGroupForCustomers | Add-UnitOfWorkEntity -UnitOfWork $uow
+$et = new-timespan $st $(get-date)
+Write-Debug "Done in $($et.TotalSeconds) seconds"
+
 $FakeData.AccProductGroup | Add-UnitOfWorkEntity -UnitOfWork $uow
+
+$st = $(get-date)
+Write-Debug "Adding AccProducts to unit of work I"
 $FakeData.AccProducts | Add-UnitOfWorkEntity -UnitOfWork $uow
+$et = new-timespan $st $(get-date)
+Write-Debug "Done in $($et.TotalSeconds) seconds"
+
+$st = $(get-date)
+Write-Debug "Adding ProductOwners to unit of work"
 $FakeData.ProductOwners | Add-UnitOfWorkEntity -UnitOfWork $uow
+$et = new-timespan $st $(get-date)
+Write-Debug "Done in $($et.TotalSeconds) seconds"
 
 # Assign ProductOwner to AccProduct
 for ($i = 0; $i -lt $FakeData.AccProducts.Count; $i++)
@@ -838,7 +937,12 @@ for ($i = 0; $i -lt $FakeData.AccProducts.Count; $i++)
   $FakeData.AccProducts[$i].UID_OrgRuler = $FakeData.ProductOwners[$i].UID_AERole
   $FakeData.AccProducts[$i].UID_AccProductGroup = $FakeData.AccProductGroup.UID_AccProductGroup
 }
+
+$st = $(get-date)
+Write-Debug "Adding AccProducts to unit of work II"
 $FakeData.AccProducts | Add-UnitOfWorkEntity -UnitOfWork $uow
+$et = new-timespan $st $(get-date)
+Write-Debug "Done in $($et.TotalSeconds) seconds"
 
 $FakeData.PersonInAERoles = New-PersonInAERoles -Session $Session -Faker $Faker -Quantity 3 -FakeData $FakeData
 
@@ -936,27 +1040,41 @@ $CommonAeRoles | ForEach-Object {
     }
 }
 
+$st = $(get-date)
+Write-Debug "Adding PersonInAERoles to unit of work"
 $FakeData.PersonInAERoles | Add-UnitOfWorkEntity -UnitOfWork $uow
+$et = new-timespan $st $(get-date)
+Write-Debug "Done in $($et.TotalSeconds) seconds"
+
+$st = $(get-date)
+Write-Debug "Adding QERReuses to unit of work"
 $FakeData.QERReuses | Add-UnitOfWorkEntity -UnitOfWork $uow
+$et = new-timespan $st $(get-date)
+Write-Debug "Done in $($et.TotalSeconds) seconds"
+
+$st = $(get-date)
+Write-Debug "Adding ITShopOrgHasQERReuse to unit of work"
 $FakeData.ITShopOrgHasQERReuse | Add-UnitOfWorkEntity -UnitOfWork $uow
+$et = new-timespan $st $(get-date)
+Write-Debug "Done in $($et.TotalSeconds) seconds"
 
 #
 # Real save into database
 #
-Write-Debug "Saving data into database"
+Write-Information "Saving data into database"
 $st = $(get-date)
 Save-UnitOfWork $uow
 $et = new-timespan $st $(get-date)
 Write-Debug "Done in $($et.TotalSeconds) seconds"
 
-Write-Debug "Closing connection"
+Write-Information "Closing connection"
 $st = $(get-date)
 Remove-IdentityManagerSession -Session $Session
 $et = new-timespan $st $(get-date)
 Write-Debug "Done in $($et.TotalSeconds) seconds"
 
 $ElapsedTimeTotal = new-timespan $StartTimeTotal $(get-date)
-Write-Debug "[*] Total runtime: $($ElapsedTimeTotal.TotalSeconds) seconds"
+Write-Information "[*] Total runtime: $($ElapsedTimeTotal.TotalSeconds) seconds"
 
 ### Cleanup
 
