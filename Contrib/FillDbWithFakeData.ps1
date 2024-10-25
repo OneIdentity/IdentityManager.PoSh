@@ -25,7 +25,7 @@ Import-Module $(Join-Path "$PSScriptRoot" ".." "PSIdentityManagerUtils\PSIdentit
 
 $ModulesToAdd = 'QER'
 
-$numberOfIdentities = 250
+$numberOfIdentities = 100
 $minSubordinates = 5
 $maxSubordinates = 15
 $rootMaxDirectReports = [Math]::Min([Math]::Ceiling($numberOfIdentities * 0.1), 7) # Size of ELT team
