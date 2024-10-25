@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.0.21] - 2024-10-25
+
+### Fixes
+
+### Testing
+
+### Miscellaneous
+
+- Minor improvements for FillDbWithFakeData.ps1
+
 ## [0.0.20] - 2024-10-23
 
 ### Fixes
