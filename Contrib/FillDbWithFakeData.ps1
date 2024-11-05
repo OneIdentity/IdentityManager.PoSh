@@ -1,17 +1,17 @@
 Param (
-    [parameter(Mandatory = $false, HelpMessage = 'Connectionstring to an Identity Manager database')]
+    [parameter(Mandatory = $false, HelpMessage = 'Connectionstring to an Identity Manager database.')]
     [ValidateNotNullOrEmpty()]
-    [string] $ConectionString = 'Data Source=127.0.0.1;Initial Catalog=DB;Integrated Security=False;User ID=sa;Password=***;Pooling=False',
-
-    [parameter(Mandatory = $false, HelpMessage = 'The authentication to use')]
-    [ValidateNotNullOrEmpty()]
-    [string] $ProductFilePath = 'D:\ClientTools',
+    [string] $Connectionstring = 'Data Source=127.0.0.1;Initial Catalog=DB;Integrated Security=False;User ID=sa;Password=***;Pooling=False',
 
     [parameter(Mandatory = $false, HelpMessage = 'The base path to load the Identity Manager product files from.')]
     [ValidateNotNullOrEmpty()]
+    [string] $ProductFilePath = 'D:\ClientTools',
+
+    [parameter(Mandatory = $false, HelpMessage = 'The authentication to use.')]
+    [ValidateNotNullOrEmpty()]
     [string] $AuthenticationString = 'Module=DialogUser;User=viadmin;Password=***',
 
-    [parameter(Mandatory = $false, HelpMessage = 'Seed value to allow generation of reproducible data')]
+    [parameter(Mandatory = $false, HelpMessage = 'Seed value to allow generation of reproducible data.')]
     [int] $Seed = 252084
 )
 
@@ -21,7 +21,7 @@ $InformationPreference = 'Continue'
 $DebugPreference = 'SilentlyContinue' # Valid values are 'SilentlyContinue' -> Don't show any debug messages; Continue -> Show debug messages.
 $ProgressPreference = 'SilentlyContinue'
 
-Import-Module $(Join-Path "$PSScriptRoot" ".." "PSIdentityManagerUtils\PSIdentityManagerUtils.psm1")
+Import-Module $(Join-Path "$PSScriptRoot" -ChildPath ".." | Join-Path -ChildPath 'PSIdentityManagerUtils' | Join-Path -ChildPath 'PSIdentityManagerUtils.psm1')
 
 $ModulesToAdd = 'QER'
 
@@ -87,7 +87,7 @@ function Resolve-Exception {
 }
 
 $Session = New-IdentityManagerSession `
--ConnectionString $ConectionString `
+-ConnectionString $Connectionstring `
 -AuthenticationString $AuthenticationString `
 -ProductFilePath $ProductFilePath `
 -ModulesToAdd $ModulesToAdd
@@ -96,8 +96,17 @@ $StartTimeTotal = $(get-date)
 
 Write-Information "Session for $($Session.Display)"
 
+# Fail fast on multiple runs - not supported
+$PersonCount = Get-TableCount -Name 'Person' -Filter "CustomProperty01 = 'Fakedata'"
+if ($PersonCount -gt 0) {
+  Write-Output "This script is not idempotent. Stopping."
+  Write-Information "Closing connection"
+  Remove-IdentityManagerSession -Session $Session
+  Exit
+}
+
 # For easy Fakedata we use Bogus - get it from https://github.com/bchavez/Bogus
-$FileToLoad = Join-Path "$PSScriptRoot" 'Bogus.dll'
+$FileToLoad = Join-Path "$PSScriptRoot" -ChildPath 'Bogus.dll'
 try {
     [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
     $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
@@ -108,7 +117,7 @@ try {
 
 # For easy QR Codes we use https://www.nuget.org/packages/QRCoder/1.4.3
 # https://github.com/codebude/QRCoder/
-$FileToLoad = Join-Path "$PSScriptRoot" 'QRCoder.dll'
+$FileToLoad = Join-Path "$PSScriptRoot" -ChildPath 'QRCoder.dll'
 try {
     [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
     $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion

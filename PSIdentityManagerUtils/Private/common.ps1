@@ -88,7 +88,7 @@ function Add-FileToAppDomain {
     throw "[!] Can't find or access folder ${BasePath}."
   }
 
-  $FileToLoad = Join-Path "${BasePath}" "$File"
+  $FileToLoad = Join-Path "${BasePath}" -ChildPath "$File"
 
   if (-not (Test-Path "$FileToLoad" -PathType Leaf))
   {
@@ -148,14 +148,19 @@ function Add-IdentityManagerProductFile {
 
   $ViDBVersion = Add-FileToAppDomain -BasePath $oneImBasePath -File $VIDB
 
-  # Powershell 7 is only supported with versions after 9.2
+  # Everything after 9.2 is not compatible with PowerShell 5
   if (5 -eq $PSVersionTable.PSVersion.Major -and $ViDBVersion.FileMajorPart -ge 9 -and $ViDBVersion.FileMinorPart -gt 2) {
+    throw "[!] This version of Identity Manager ($($ViDBVersion.ProductVersion)) is not usable with PowerShell version $($PSVersionTable.PSVersion)."
+  }
+
+  # Everything below 9.3 is not compatible with PowerShell 7
+  if (7 -eq $PSVersionTable.PSVersion.Major -and $ViDBVersion.FileMajorPart -le 9 -and $ViDBVersion.FileMinorPart -lt 3) {
     throw "[!] This version of Identity Manager ($($ViDBVersion.ProductVersion)) is not usable with PowerShell version $($PSVersionTable.PSVersion)."
   }
 
   # Support Identity Manager after 9.2 with version with PowerShell 7
   if (7 -eq $PSVersionTable.PSVersion.Major -and $ViDBVersion.FileMajorPart -ge 9 -and $ViDBVersion.FileMinorPart -gt 2) {
-    Add-FileToAppDomain -BasePath $(Join-Path $oneImBasePath 'net8.0') -File 'Microsoft.Data.SqlClient.dll' | Out-Null
+    Add-FileToAppDomain -BasePath $(Join-Path $oneImBasePath -ChildPath 'net8.0') -File 'Microsoft.Data.SqlClient.dll' | Out-Null
   }
 
   $oneImBasePath

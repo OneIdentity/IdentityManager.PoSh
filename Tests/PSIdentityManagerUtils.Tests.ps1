@@ -21,7 +21,7 @@ Describe "General project validation: $ModuleName" -Tag 'Compliance' {
         $ProjectRoot = Resolve-Path "$PSScriptRoot\.."
         $ModuleRoot = Split-Path (Resolve-Path "$ProjectRoot\*\*.psm1")
         $ModuleName = Split-Path $ModuleRoot -Leaf
-        { Import-Module (Join-Path "$ModuleRoot" "$ModuleName.psm1") -force } | Should -Not -Throw
+        { Import-Module (Join-Path "$ModuleRoot" -ChildPath "$ModuleName.psm1") -force } | Should -Not -Throw
     }
 }
 

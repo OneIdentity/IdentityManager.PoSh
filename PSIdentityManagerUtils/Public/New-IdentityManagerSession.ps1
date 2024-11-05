@@ -24,8 +24,8 @@ function New-IdentityManagerSession {
 
   Begin {
     # make sure our exception handler function is loaded
-    if (-not (Get-Command 'Resolve-Exception' -errorAction SilentlyContinue)) {
-      . (Join-Path "$PSScriptRoot".Replace('Public', 'Private') 'common.ps1')
+    if (-not (Get-Command 'Resolve-Exception' -ErrorAction SilentlyContinue)) {
+      . (Join-Path "$PSScriptRoot".Replace('Public', 'Private') -ChildPath 'common.ps1')
     }
 
     $oneImBasePath = Add-IdentityManagerProductFile "$ProductFilePath"

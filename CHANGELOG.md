@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.0.22] - 2024-11-01
+
+### Fixes
+
+- Fix issues with Join-Path
+- Fix some typos
+
+### Testing
+
+### Miscellaneous
+
+
 ## [0.0.21] - 2024-10-25
 
 ### Fixes
