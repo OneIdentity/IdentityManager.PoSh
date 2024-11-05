@@ -10,9 +10,9 @@
       }
     })]
     $Session = $null,
-    [parameter(Mandatory = $false, HelpMessage = 'The tablename of the object')]
+    [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The tablename of the object')]
     [string] $Name,
-    [parameter(Mandatory = $false, HelpMessage = 'Specify a SQL where clause to filter the result')]
+    [parameter(Mandatory = $false, Position = 1, HelpMessage = 'Specify a SQL where clause to filter the result')]
     [string] $Filter = ''
   )
 
@@ -34,7 +34,7 @@
       $query = [VI.DB.Entities.Query]::From($Name).Where($Filter).SelectCount()
       $result = $src.GetCountAsync($query, $noneToken).GetAwaiter().GetResult()
 
-      Write-Output $result
+      $result
     } catch {
       Resolve-Exception -ExceptionObject $PSitem
     }

@@ -96,14 +96,14 @@ function CollectDeps {
     }
 
     Write-Output 'Creating fallback marker files...'
-    $markerDir = Join-Path "$TargetDir" 'fallback'
+    $markerDir = Join-Path "$TargetDir" -ChildPath 'fallback'
 
     if ( -Not (Test-Path "$markerDir") ) {
         New-Item -Path "$markerDir" -ItemType Directory > $null
     }
 
     $fallbackMarkerFiles | ForEach-Object {
-        $marker = Join-Path $markerDir "$_.use_default"
+        $marker = Join-Path $markerDir -ChildPath "$_.use_default"
         Write-Output "[+] Create fallback marker for $_"
         Write-Output 'Use default' > $marker
     }
@@ -135,7 +135,7 @@ function Cleanup {
         }
     }
 
-    $markerDir = Join-Path "$TargetDir" 'fallback'
+    $markerDir = Join-Path "$TargetDir" -ChildPath 'fallback'
     if ( Test-Path "$markerDir" ) {
         Remove-Item -Path "$markerDir" -Recurse -Force
     }
