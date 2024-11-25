@@ -12,7 +12,7 @@ Param (
     [string] $AuthenticationString = 'Module=DialogUser;User=viadmin;Password=***',
 
     [parameter(Mandatory = $false, HelpMessage = 'Seed value to allow generation of reproducible data.')]
-    [int] $Seed = 252084
+    [int] $Seed = 973523
 )
 
 Set-StrictMode -Version Latest
