@@ -1,7 +1,7 @@
 Param (
     [parameter(Mandatory = $false, HelpMessage = 'Connectionstring to an Identity Manager database.')]
     [ValidateNotNullOrEmpty()]
-    [string] $Connectionstring = 'Data Source=127.0.0.1;Initial Catalog=DB;Integrated Security=False;User ID=sa;Password=***;Pooling=False',
+    [string] $Connectionstring = 'Data Source=127.0.0.1;Initial Catalog=DB;User ID=sa;Password=***;Pooling=False',
 
     [parameter(Mandatory = $false, HelpMessage = 'The base path to load the Identity Manager product files from.')]
     [ValidateNotNullOrEmpty()]
@@ -170,7 +170,7 @@ function New-Identities {
         # Fehlerkorrekturlevel / ECCLevel: L (7%), M (15%), Q (25%) und H (30%)
         $qrCodeData = $qrGenerator.CreateQrCode($TextToEncode, 'M')
         $qrCode = New-Object -TypeName QRCoder.PngByteQRCode -ArgumentList ($qrCodeData)
-        $byteArray = $qrCode.GetGraphic(5, ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
+        $byteArray = $qrCode.GetGraphic(5, [byte[]]($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), [byte[]]($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
 
         $p = New-Person `
             -FirstName $FirstName `
@@ -364,7 +364,7 @@ function New-AccProducts {
     # Fehlerkorrekturlevel / ECCLevel: L (7%), M (15%), Q (25%) und H (30%)
     $qrCodeData = $qrGenerator.CreateQrCode($TextToEncode, 'M')
     $qrCode = New-Object -TypeName QRCoder.PngByteQRCode -ArgumentList ($qrCodeData)
-    $byteArray = $qrCode.GetGraphic(5, ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
+    $byteArray = $qrCode.GetGraphic(5, [byte[]]($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), [byte[]]($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
     
     $AccProduct = New-AccProduct -Ident_AccProduct $ProductName `
       -Description $Faker.Lorem.Sentence(3, 5) `
@@ -404,7 +404,7 @@ function New-AccProductGroups {
   # Fehlerkorrekturlevel / ECCLevel: L (7%), M (15%), Q (25%) und H (30%)
   $qrCodeData = $qrGenerator.CreateQrCode($TextToEncode, 'M')
   $qrCode = New-Object -TypeName QRCoder.PngByteQRCode -ArgumentList ($qrCodeData)
-  $byteArray = $qrCode.GetGraphic(5, ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), ($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
+  $byteArray = $qrCode.GetGraphic(5, [byte[]]($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), [byte[]]($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
   
   $AccProductGroup = New-AccProductGroup -Ident_AccProductGroup $ProductName `
     -Description $Faker.Lorem.Sentence(3, 5) `

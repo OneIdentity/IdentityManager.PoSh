@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.0.23] - 2024-12-10
+
+### Fixes
+
+- Fix issues when running on Linux
+
+### Testing
+
+### Miscellaneous
+
+- Update QRCoder to 1.6.0
+
 ## [0.0.22] - 2024-11-01
 
 ### Fixes
@@ -10,7 +22,6 @@
 ### Testing
 
 ### Miscellaneous
-
 
 ## [0.0.21] - 2024-10-25
 
