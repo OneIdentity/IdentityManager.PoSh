@@ -19,7 +19,9 @@ function New-IdentityManagerSession {
     [Parameter(Mandatory = $false, HelpMessage = 'List of modules to add for function generation')]
     [String[]] $ModulesToAdd,
     [Parameter(Mandatory = $false, HelpMessage = 'If the switch is specified the type wrapper functions will not be created (e.g. New-Person, New-ADSAccount)')]
-    [switch] $SkipFunctionGeneration = $false
+    [switch] $SkipFunctionGeneration = $false,
+    [Parameter(Mandatory = $false, HelpMessage = 'If the switch is specified the trace mode for the Identity Manager will be activated. This means NLog will use log level trace.')]
+    [switch] $TraceMode = $false
   )
 
   Begin {
@@ -28,7 +30,14 @@ function New-IdentityManagerSession {
       . (Join-Path "$PSScriptRoot".Replace('Public', 'Private') -ChildPath 'common.ps1')
     }
 
-    $oneImBasePath = Add-IdentityManagerProductFile "$ProductFilePath"
+    $oneImBasePath = Add-IdentityManagerProductFile "$ProductFilePath" -TraceMode:$TraceMode
+
+    if ($TraceMode) {
+      $traceFile = Join-Path $(New-TemporaryDirectory) 'PSIdentityManagerUtils_trace.log'
+      [NLog.Config.SimpleConfigurator]::ConfigureForFileLogging($traceFile, [NLog.LogLevel]::FromString('Trace'))
+
+      Write-Information "[!] TraceMode is active and log file will be written to '${traceFile}'."
+    }
   }
 
   Process {
@@ -43,7 +52,7 @@ function New-IdentityManagerSession {
 
       if ($FactoryName -eq 'QBM.AppServer.Client.ServiceClientFactory') {
         [System.AppDomain]::CurrentDomain.add_AssemblyResolve($Global:OnAssemblyResolve)
-        [System.Reflection.Assembly]::LoadFrom([io.path]::combine($oneImBasePath, 'QBM.AppServer.Client.dll')) | Out-Null
+        Add-FileToAppDomain -BasePath $oneImBasePath -File 'QBM.AppServer.Client.dll' | Out-Null
       }
 
       # Create the session

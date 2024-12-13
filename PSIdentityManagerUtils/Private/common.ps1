@@ -120,7 +120,9 @@ function Add-IdentityManagerProductFile {
   [CmdletBinding()]
   param (
     [parameter(Mandatory = $false, Position = 0, HelpMessage = 'The base path to load files from.')]
-    [string] $BasePath = $null
+    [string] $BasePath = $null,
+    [Parameter(Mandatory = $false, HelpMessage = 'If the switch is specified the trace mode for the Identity Manager will be activated. This means NLog will use log level trace.')]
+    [switch] $TraceMode = $false
   )
 
   $VIDB = 'VI.DB.dll'
@@ -160,7 +162,15 @@ function Add-IdentityManagerProductFile {
 
   # Support Identity Manager after 9.2 with version with PowerShell 7
   if (7 -eq $PSVersionTable.PSVersion.Major -and $ViDBVersion.FileMajorPart -ge 9 -and $ViDBVersion.FileMinorPart -gt 2) {
-    Add-FileToAppDomain -BasePath $(Join-Path $oneImBasePath -ChildPath 'net8.0') -File 'Microsoft.Data.SqlClient.dll' | Out-Null
+    if ($IsWindows) {
+      Add-FileToAppDomain -BasePath $(Join-Path $oneImBasePath -ChildPath 'net8.0') -File 'Microsoft.Data.SqlClient.dll' | Out-Null
+    } elseif ($IsLinux) {
+      Add-FileToAppDomain -BasePath $(Join-Path $(Join-Path $(Join-Path $(Join-Path $oneImBasePath -ChildPath 'runtimes') -ChildPath 'unix') -ChildPath 'lib') -ChildPath 'net8.0') -File 'Microsoft.Data.SqlClient.dll' | Out-Null
+    }
+  }
+
+  if ($TraceMode) {
+    Add-FileToAppDomain -BasePath $oneImBasePath -File 'NLog.dll' | Out-Null
   }
 
   $oneImBasePath
@@ -203,6 +213,16 @@ $Global:OnAssemblyResolve = [System.ResolveEventHandler] {
   }
 
   throw "[!] Unable to resolve $($e.Name)."
+}
+
+function New-TemporaryDirectory {
+  $parent = [System.IO.Path]::GetTempPath()
+  do {
+    $name = [System.IO.Path]::GetRandomFileName()
+    $item = New-Item -Path $parent -Name $name -ItemType 'Directory' -ErrorAction SilentlyContinue
+  } while (-Not $item)
+
+  return $item.FullName
 }
 
 # just for convenience to save typing
