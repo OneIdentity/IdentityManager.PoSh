@@ -23,7 +23,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 Import-Module $(Join-Path "$PSScriptRoot" -ChildPath ".." | Join-Path -ChildPath 'PSIdentityManagerUtils' | Join-Path -ChildPath 'PSIdentityManagerUtils.psm1')
 
-$ModulesToAdd = 'QER','RMB'
+$ModulesToAdd = 'QER', 'RMB'
 
 $numberOfIdentities = 100
 $minSubordinates = 5
@@ -36,8 +36,6 @@ $numberOfFirmPartner = 20
 $numberOfFunctionalAreas = 20
 $NumberOfItShopProducts = 1000
 $OrgStructureDepth = 3
-
-$noneToken = [System.Threading.CancellationToken]::None
 
 function Resolve-Exception {
   [CmdletBinding()]
@@ -98,6 +96,7 @@ $Session = New-IdentityManagerSession `
 -ModulesToAdd $ModulesToAdd
 
 $StartTimeTotal = $(get-date)
+
 Write-Information "Session for $($Session.Display)"
 
 # Fail fast on multiple runs - not supported
@@ -135,13 +134,13 @@ $FakeData = [PSCustomObject]@{
   Departments = @()
   CostCenters = @()
   Locations = @()
-  Orgs = @()
+  BusinessRoles = @()
   FirmPartners = @()
   FunctionalAreas = @()
   IdentityInDepartment = @()
   IdentityInCostCenter = @()
   IdentityInLocality = @()
-  IdentityInOrg = @()
+  PersonInOrgs = @()
   AccProducts = @()
   ProductOwners = @()
   PersonInAERoles = @()
@@ -166,8 +165,7 @@ function New-Identities {
     Write-Information "Creating $Quantity Identity records in memory"
 
     $StartTime = $(get-date)
-    for ($i = 1; $i -le $Quantity; $i++)
-    {
+    for ($i = 1; $i -le $Quantity; $i++) {
         $fakeDate = [Bogus.DataSets.Date]::new()
 
         $FirstName = $Faker.Name.FirstName()
@@ -227,8 +225,7 @@ function New-Departments {
   Write-Information "Creating $Quantity Department records in memory"
 
   $StartTime = $(get-date)
-  for ($i = 1; $i -le $Quantity; $i++)
-  {
+  for ($i = 1; $i -le $Quantity; $i++) {
     $Department = New-Department `
       -DepartmentName $($Faker.Address.City() + ' ' + $Faker.Commerce.Categories(1)) `
       -CustomProperty01 'Fakedata' `
@@ -272,8 +269,7 @@ function New-CostCenters {
   Write-Information "Creating $Quantity Cost Center records in memory"
 
   $StartTime = $(get-date)
-  for ($i = 1; $i -le $Quantity; $i++)
-  {
+  for ($i = 1; $i -le $Quantity; $i++) {
     $ProfitCenter = New-ProfitCenter `
       -AccountNumber $Faker.Commerce.Ean13() `
       -CustomProperty01 'Fakedata' `
@@ -315,8 +311,7 @@ function New-Locations {
   Write-Information "Creating $Quantity Location records in memory"
 
   $StartTime = $(get-date)
-  for ($i = 1; $i -le $Quantity; $i++)
-  {
+  for ($i = 1; $i -le $Quantity; $i++) {
     $LocationName = $Faker.Address.OrdinalDirection() + ' ' + $Faker.Lorem.Word() + ' ' + $Faker.Commerce.Ean8()
     $Locality = New-Locality `
       -Ident_Locality $LocationName `
@@ -370,8 +365,7 @@ function New-FirmPartners {
   Write-Information "Creating $Quantity FirmPartner records in memory"
 
   $StartTime = $(get-date)
-  for ($i = 1; $i -le $Quantity; $i++)
-  {
+  for ($i = 1; $i -le $Quantity; $i++) {
     $FirmPartnerName = $Faker.Company.CompanyName()
     $FirmPartner = New-FirmPartner `
       -Ident_FirmPartner $FirmPartnerName `
@@ -414,8 +408,7 @@ function New-FunctionalAreas {
   Write-Information "Creating $Quantity FunctionalArea records in memory"
 
   $StartTime = $(get-date)
-  for ($i = 1; $i -le $Quantity; $i++)
-  {
+  for ($i = 1; $i -le $Quantity; $i++) {
     $FunctionalAreaName = $Faker.Company.Bs()
     $FunctionalArea = New-FunctionalArea `
       -Ident_FunctionalArea $FunctionalAreaName `
@@ -446,8 +439,7 @@ function New-AccProducts {
   Write-Information "Creating $Quantity AccProduct records in memory"
 
   $StartTime = $(get-date)
-  for ($i = 0; $i -lt $Quantity; $i++)
-  {
+  for ($i = 0; $i -lt $Quantity; $i++) {
     $ProductName = $Faker.Commerce.Ean8() + '_' + $i
     $qrGenerator = New-Object -TypeName QRCoder.QRCodeGenerator
     $TextToEncode = "$ProductName"
@@ -527,8 +519,7 @@ function New-ProductOwners {
 
   Write-Information "Creating $Quantity ProductOwner records in memory"
   $StartTime = $(get-date)
-  for ($i = 0; $i -lt $Quantity; $i++)
-  {
+  for ($i = 0; $i -lt $Quantity; $i++) {
     $ProductOwner = New-AERole -Ident_AERole $FakeData.AccProducts[$i].Ident_AccProduct `
       -UID_OrgRoot 'QER-V-AERole' `
       -Description $Faker.Lorem.Sentence(3, 5) `
@@ -566,8 +557,7 @@ function New-QERReuses {
   Write-Information "Creating $Quantity QERReuse records in memory"
 
   $StartTime = $(get-date)
-  for ($i = 0; $i -lt $Quantity; $i++)
-  {
+  for ($i = 0; $i -lt $Quantity; $i++) {
    
     $QERReuse = New-QERReuse -Ident_QERReuse $FakeData.AccProducts[$i].Ident_AccProduct `
       -Description $Faker.Lorem.Sentence(3, 5) `
@@ -596,15 +586,14 @@ function New-ITShopOrgHasQERReuses {
       [int] $Quantity,
       [parameter(Mandatory = $false)]
       [PSCustomObject[]]$FakeData,
-      [parameter(Mandatory = $true, Position = 2, HelpMessage = 'The UID_ITShopOrg Shelf for the assignment')]
+      [parameter(Mandatory = $true, Position = 3, HelpMessage = 'The UID_ITShopOrg Shelf for the assignment')]
       [string] $UID_ITShopOrg
   )
 
   Write-Information "Creating $Quantity ITShop <-> QERReuse assignment records in memory"
 
   $StartTime = $(get-date)
-  for ($i = 0; $i -lt $Quantity; $i++)
-  {
+  for ($i = 0; $i -lt $Quantity; $i++) {
    
     $ITShopOrgHasQERReuse = New-ITShopOrgHasQERReuse -UID_QERReuse $FakeData.QERReuses[$i].UID_QERReuse `
       -UID_ITShopOrg $UID_ITShopOrg `
@@ -634,8 +623,7 @@ function New-PersonInAERoles  {
   Write-Information "Creating $Quantity PersonInAERole records for every AERole in memory"
 
   $StartTime = $(get-date)
-  for ($i = 0; $i -lt $FakeData.ProductOwners.Count; $i++)
-  {
+  for ($i = 0; $i -lt $FakeData.ProductOwners.Count; $i++) {
     $RandomPersons = $FakeData.Identities | Get-Random -SetSeed $($Seed * $i) -Count $Quantity
 
     $RandomPersons | ForEach-Object {
@@ -645,6 +633,46 @@ function New-PersonInAERoles  {
       $PersonInAERole
     }
   }
+  $ElapsedTime = New-TimeSpan $StartTime $(get-date)
+  Write-Debug "Done in $elapsedTime"
+}
+
+function New-PersonInOrgs {
+  [CmdletBinding()]
+  param (
+      [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The session to use')]
+      [ValidateNotNull()]
+      [VI.DB.Entities.ISession] $Session,
+      [parameter(Mandatory = $true, Position = 1, HelpMessage = 'The Bogus faker instance')]
+      [ValidateNotNull()]
+      [Bogus.Faker] $Faker,
+      [parameter(Mandatory = $false, Position = 2, HelpMessage = 'The number of fake objects')]
+      [int] $Quantity,
+      [parameter(Mandatory = $false)]
+      [PSCustomObject[]]$FakeData
+  )
+
+  Write-Information "Creating PersonInOrg records"
+
+  $StartTime = $(get-date)
+
+  for ($i = 0; $i -lt $FakeData.Identities.Count; $i++) {
+    $numberOfAdditionalAssignments = $Faker.Random.Int(1, $Quantity)
+    $RandomOrgs = $FakeData.BusinessRoles | Get-Random -SetSeed $($Seed * $i) -Count $numberOfAdditionalAssignments
+
+    $RandomOrgs | ForEach-Object {
+      if ($FakeData.Identities[$i].UID_Org -eq $_.UID_Org) {
+        # Don't assign same Org again (indirectly)
+        continue
+      }
+
+      $PersonInOrg = New-PersonInOrg -UID_Org $_.UID_Org `
+        -UID_Person $FakeData.Identities[$i].UID_Person `
+        -Unsaved
+      $PersonInOrg
+    }
+  }
+
   $ElapsedTime = New-TimeSpan $StartTime $(get-date)
   Write-Debug "Done in $elapsedTime"
 }
@@ -766,13 +794,14 @@ $FakeData.Locations | Where-Object UID_FunctionalArea -eq '' | ForEach-Object {
 #
 # Persist data into database - this MUST be DONE HERE otherwise we cannot find the foreign keys
 #
+Write-Information "[*] Persisting data stage 1"
+
 $st = $(get-date)
 Write-Debug "Adding FunctionalAreas to unit of work"
 $FakeData.FunctionalAreas | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
-Write-Information "[*] Persisting data stage 1"
 $st = $(get-date)
 Write-Debug "Adding Identities to unit of work"
 $FakeData.Identities | Add-UnitOfWorkEntity -UnitOfWork $uow
@@ -802,8 +831,6 @@ Write-Debug "Adding FirmPartners to unit of work"
 $FakeData.FirmPartners | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
-
-$uow.CommitAsync($noneToken).GetAwaiter().GetResult() | Out-Null
 
 #
 # Create Org / Business role structure
@@ -845,9 +872,9 @@ function New-OrgHierarchy {
 
         for ($i = 1; $i -le $numEntries; $i++) {
 
-          $name = "Org {0:D2}-{1:D2}" -f $currentLevel, $i
+          $BusinessRoleName = "Org {0:D2}-{1:D2}" -f $currentLevel, $i
 
-          $Org = New-Org -Ident_Org "$name" `
+          $BusinessRole = New-Org -Ident_Org "$BusinessRoleName" `
             -InternalName $Faker.Lorem.Word() `
             -ShortName $Faker.Lorem.Word() `
             -UID_OrgRoot $OrgRoot.UID_OrgRoot `
@@ -876,14 +903,14 @@ function New-OrgHierarchy {
             -Unsaved
 
           if (-Not [string]::IsNullOrEmpty($UID_ParentOrg)) {
-              $Org.UID_ParentOrg = $UID_ParentOrg
+              $BusinessRole.UID_ParentOrg = $UID_ParentOrg
           }
 
-          $Org | Add-UnitOfWorkEntity -UnitOfWork $uow
-          $FakeData.Orgs += $Org
+          $BusinessRole | Add-UnitOfWorkEntity -UnitOfWork $uow
+          $FakeData.BusinessRoles += $BusinessRole
 
           # Recursive call to create the next level
-          New-OrgHierarchy -currentLevel ($currentLevel + 1) -UID_ParentOrg $Org.UID_Org
+          New-OrgHierarchy -currentLevel ($currentLevel + 1) -UID_ParentOrg $BusinessRole.UID_Org
         }
     }
 }
@@ -891,8 +918,6 @@ function New-OrgHierarchy {
 New-OrgHierarchy
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
-
-$uow.CommitAsync($noneToken).GetAwaiter().GetResult() | Out-Null
 
 $st = $(get-date)
 Write-Information "[*] Wire Identities with Cost Centers, Departments, Locations, Business Roles, Managers (direct and indirect)"
@@ -918,7 +943,7 @@ for ($i = 0; $i -lt $FakeData.Identities.Count; $i++)
   $FakeData.Identities[$i].UID_Locality = $UID_Locality
 
   # Assign a Business Role to every identity
-  $UID_Org = $Faker.Random.ArrayElement($($FakeData.Orgs).UID_Org)
+  $UID_Org = $Faker.Random.ArrayElement($($FakeData.BusinessRoles).UID_Org)
   $FakeData.Identities[$i].UID_Org = $UID_Org
 
   # Give Identities a fixed default email address
@@ -977,22 +1002,6 @@ for ($i = 0; $i -lt $FakeData.Identities.Count; $i++)
     }
   }
 
-  # Additional Business Role assignments (Exclude the same as already direct assigned)
-  $numberOfAdditionalAssignments = $Faker.Random.Number(0, $FakeData.Orgs.Count)
-  for ($j = 0; $j -lt $numberOfAdditionalAssignments; $j++) {
-    $RandomAssignement = $Faker.Random.ArrayElement($($FakeData.Orgs).UID_Org)
-    if ($RandomAssignement -ne $UID_Org) {
-      $Assignment = New-PersonInOrg -UID_Person $FakeData.Identities[$i].UID_Person `
-        -UID_Org $RandomAssignement -Unsaved
-
-      if (0 -eq $FakeData.IdentityInOrg.Count) {
-        $FakeData.IdentityInOrg += $Assignment
-      } elseif (-not ($FakeData.IdentityInOrg | Where-Object { ($_.UID_Person -eq $FakeData.Identities[$i].UID_Person) -and ($_.UID_Org -eq $RandomAssignement) } )) {
-        $FakeData.IdentityInOrg += $Assignment
-      }
-    }
-  }
-
 }
 
 # Add managers to identities start
@@ -1047,8 +1056,6 @@ try {
 }
 # Add managers to identities end
 
-$uow.CommitAsync($noneToken).GetAwaiter().GetResult() | Out-Null
-
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
@@ -1088,7 +1095,7 @@ $ItShopCustomer.UID_ParentITShopOrg = $ItShop.UID_ITShopOrg
 # UID_DialogSchedule -> "Dynamic roles check" with fixed UID 'QER-B78E7C59F09D487085506ED339F0257D'
 $DynGroupForCustomers = New-DynamicGroup -DisplayName 'Dynamic Group for FakeShop customers' `
   -IsCalculateImmediately 1 `
-  -ObjectKeyBaseTree "<Key><T>ITShopOrg</T><P>$($ItShopCustomer.UID_ITShopOrg)</P></Key>" `
+  -ObjectKeyBaseTree $('<Key><T>ITShopOrg</T><P>' + $ItShopCustomer.UID_ITShopOrg + '</P></Key>') `
   -UID_DialogTableObjectClass 'QER-T-Person' `
   -UID_DialogSchedule 'QER-B78E7C59F09D487085506ED339F0257D' `
   -WhereClause "isnull(IsInActive, 0) = 0 and CustomProperty01 = 'Fakedata'" `
@@ -1149,8 +1156,6 @@ $FakeData.IdentityInLocality | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
-$uow.CommitAsync($noneToken).GetAwaiter().GetResult() | Out-Null
-
 $st = $(get-date)
 Write-Debug "Adding ITShop Orgs to unit of work"
 $ItShop | Add-UnitOfWorkEntity -UnitOfWork $uow
@@ -1161,15 +1166,10 @@ $DynGroupForCustomers | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
-$st = $(get-date)
-Write-Debug "Adding assignment of Identities to Business Roles to unit of work"
-$FakeData.IdentityInOrg | Add-UnitOfWorkEntity -UnitOfWork $uow
-$et = New-TimeSpan $st $(get-date)
-Write-Debug "Done in $et"
+$FakeData.AccProductGroup | Add-UnitOfWorkEntity -UnitOfWork $uow
 
 $st = $(get-date)
 Write-Debug "Adding AccProducts to unit of work I"
-$FakeData.AccProductGroup | Add-UnitOfWorkEntity -UnitOfWork $uow
 $FakeData.AccProducts | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
@@ -1180,11 +1180,8 @@ $FakeData.ProductOwners | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
-$uow.CommitAsync($noneToken).GetAwaiter().GetResult() | Out-Null
-
 # Assign ProductOwner to AccProduct
-for ($i = 0; $i -lt $FakeData.AccProducts.Count; $i++)
-{
+for ($i = 0; $i -lt $FakeData.AccProducts.Count; $i++) {
   # Reload entities to allow further updates
   $FakeData.AccProducts[$i] = $FakeData.AccProducts[$i].Reload()
   $FakeData.AccProducts[$i].UID_OrgRuler = $FakeData.ProductOwners[$i].UID_AERole
@@ -1293,6 +1290,8 @@ $CommonAeRoles | ForEach-Object {
     }
 }
 
+$FakeData.PersonInOrgs = New-PersonInOrgs -Session $Session -Faker $Faker -Quantity 7 -FakeData $FakeData
+
 $st = $(get-date)
 Write-Debug "Adding PersonInAERoles to unit of work"
 $FakeData.PersonInAERoles | Add-UnitOfWorkEntity -UnitOfWork $uow
@@ -1308,6 +1307,12 @@ Write-Debug "Done in $et"
 $st = $(get-date)
 Write-Debug "Adding ITShopOrgHasQERReuse to unit of work"
 $FakeData.ITShopOrgHasQERReuse | Add-UnitOfWorkEntity -UnitOfWork $uow
+$et = New-TimeSpan $st $(get-date)
+Write-Debug "Done in $et"
+
+$st = $(get-date)
+Write-Debug "Adding PersonInOrg to unit of work"
+$FakeData.PersonInOrgs | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
@@ -1336,6 +1341,7 @@ Write-Information "[*] Total runtime: $ElapsedTimeTotal"
 # update PersonInAERole set XOrigin = 0 where UID_Person in (select UID_Person from Person where CustomProperty01 = 'Fakedata')
 # delete from PersonInAERole where UID_Person in (select UID_Person from Person where CustomProperty01 = 'Fakedata')
 # delete from AERole where CustomProperty01 = 'Fakedata'
+# delete from PersonInOrg where UID_Org in (select UID_Org from Org where CustomProperty01 = 'Fakedata')
 
 # delete from ITShopOrg where UID_AccProduct in (select UID_AccProduct from AccProduct where CustomProperty01 = 'Fakedata')
 # delete from QERReuse where CustomProperty01 = 'Fakedata'
@@ -1348,10 +1354,10 @@ Write-Information "[*] Total runtime: $ElapsedTimeTotal"
 # delete FunctionalArea
 # delete FirmPartner
 
+# delete from Org where CustomProperty01 = 'Fakedata'
+# delete from OrgRoot where Ident_OrgRoot = 'FakeOrgRoot'
+
 # delete from Person where CustomProperty01 = 'Fakedata'
 # delete from Department where CustomProperty01 = 'Fakedata'
 # delete from ProfitCenter where CustomProperty01 = 'Fakedata'
 # delete from Locality where CustomProperty01 = 'Fakedata'
-
-# delete from Org where CustomProperty01 = 'Fakedata'
-# delete from OrgRoot  where Ident_OrgRoot = 'FakeOrgRoot'
