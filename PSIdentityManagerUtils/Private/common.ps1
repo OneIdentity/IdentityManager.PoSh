@@ -120,7 +120,9 @@ function Add-IdentityManagerProductFile {
   [CmdletBinding()]
   param (
     [parameter(Mandatory = $false, Position = 0, HelpMessage = 'The base path to load files from.')]
-    [string] $BasePath = $null
+    [string] $BasePath = $null,
+    [Parameter(Mandatory = $false, HelpMessage = 'If the switch is specified the trace mode for the Identity Manager will be activated. This means NLog will use log level trace.')]
+    [switch] $TraceMode = $false
   )
 
   $VIDB = 'VI.DB.dll'
@@ -167,6 +169,10 @@ function Add-IdentityManagerProductFile {
     }
   }
 
+  if ($TraceMode) {
+    Add-FileToAppDomain -BasePath $oneImBasePath -File 'NLog.dll' | Out-Null
+  }
+
   $oneImBasePath
 }
 
@@ -207,6 +213,16 @@ $Global:OnAssemblyResolve = [System.ResolveEventHandler] {
   }
 
   throw "[!] Unable to resolve $($e.Name)."
+}
+
+function New-TemporaryDirectory {
+  $parent = [System.IO.Path]::GetTempPath()
+  do {
+    $name = [System.IO.Path]::GetRandomFileName()
+    $item = New-Item -Path $parent -Name $name -ItemType 'Directory' -ErrorAction SilentlyContinue
+  } while (-Not $item)
+
+  return $item.FullName
 }
 
 # just for convenience to save typing

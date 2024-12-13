@@ -46,8 +46,13 @@
               Resolve-Exception -ExceptionObject $PSitem
             }
 
-            $Entity = [VI.DB.Entities.Entity]::ReloadAsync($this, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
-            $Entity = Add-EntityMemberExtension -Entity $Entity
+            try {
+              $Entity = [VI.DB.Entities.Entity]::ReloadAsync($this, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
+              $Entity = Add-EntityMemberExtension -Entity $Entity
+            } catch {
+              Resolve-Exception -ExceptionObject $PSitem
+            }
+
             $Entity
           }
 

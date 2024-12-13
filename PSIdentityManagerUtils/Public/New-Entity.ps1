@@ -37,7 +37,9 @@ function New-Entity {
     try {
 
       # Create entity
-      $entity = $src.CreateNewAsync($Type, [VI.DB.Entities.EntityParameters]::new(), $noneToken).GetAwaiter().GetResult()
+      $entityParameters = [VI.DB.Entities.EntityParameters]::new()
+      $entityParameters.CreationType = [VI.DB.Entities.EntityCreationType]::Default
+      $entity = $src.CreateNewAsync($Type, $entityParameters, $noneToken).GetAwaiter().GetResult()
       $entity = Add-EntityMemberExtension -Entity $entity
 
       # Set property values

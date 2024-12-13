@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [0.0.23] - 2024-12-10
+## [0.0.23] - 2024-12-13
 
 ### Fixes
 
@@ -11,6 +11,8 @@
 ### Miscellaneous
 
 - Update QRCoder to 1.6.0
+- Introduce trace mode to generate Object and SQL log
+- Extend demo script with more test data
 
 ## [0.0.22] - 2024-11-01
 

@@ -10,7 +10,7 @@ Describe 'Entity' {
             -SkipFunctionGeneration
     }
 
-    Context 'Initalize' {
+    Context 'Initializing' {
         It 'Get-Entity throws on unknown session' {
             { Get-Entity -Session 'Unittest' } | Should -Throw '*The given value is not a valid session*'
         }
