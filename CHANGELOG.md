@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.0.24] - 2025-01-16
+
+### Fixes
+
+- Fix issues with sql factory detection
+
+### Testing
+
+### Miscellaneous
+
+- Update requirements for latest Identity Manager release v9.3x
+- Update steps for getting more insights in case of errors
+
 ## [0.0.23] - 2024-12-13
 
 ### Fixes
