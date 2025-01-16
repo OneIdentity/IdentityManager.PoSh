@@ -83,18 +83,24 @@ A Powershell library for One Identity Manager interaction.
 <!-- Supported Versions -->
 ## Supported Versions
 
-This library is known to work with One Identity Manager version 8.0x, 8.1x, 8.2x, 9.0x, 9.1x and 9.2x
+This library is known to work with One Identity Manager version 8.0x, 8.1x, 8.2x, 9.0x, 9.1x, 9.2x and 9.3x
 
 [:top:](#table-of-contents)
 
 <!-- Requirements -->
 ## Requirements
 
-* Windows PowerShell 5.1
+### Identity Manager up from version 9.3x
+
+* PowerShell 7+
 
 :bangbang: Warning
 
-This version is not compatible with Powershell Versions 6 or 7!
+The Identity Manager up from version 9.3x can only be used with Powershell 7+.
+
+### Identity Manager prior to version 9.3x
+
+This version is not compatible with Powershell Versions 6 or 7 and you have to use Windows PowerShell 5.1.
 
 The Identity Manager product DLLs
   * By default, the Powershell module with try to load all referenced DLLs from a valid Identity Manager client component installation. This is typically at the default path '```C:\Program Files\One Identity\One Identity Manager```'.
@@ -507,7 +513,11 @@ Contributions are what make the open source community such an amazing place to b
 <!-- Encountering errors -->
 ### Encountering errors
 
-It may happen that errors occur. In this case it's possible to activate debug messages. This can be activated in file ```Private\common.ps1```. Change line three from $DebugPreference = 'SilentlyContinue' to $DebugPreference = 'Continue'. If you open a GitHub issue please add any Debug messages as well.
+It may happen that errors occur. In this case it's possible to activate debug messages. 
+To get the output from Write-Debug messages, please activate debug messages globally with ```$global:DebugPreference = "Continue"```
+The cmdlet New-IdentityManagerSession also has the 'TraceMode' switch which could be added as well.
+
+If you open a GitHub issue please add any Debug messages as well.
 
 [:top:](#table-of-contents)
 

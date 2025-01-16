@@ -1,6 +1,7 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$DebugPreference = 'SilentlyContinue' # Valid values are 'SilentlyContinue' -> Don't show any debug messages; Continue -> Show debug messages.
+#$DebugPreference = 'SilentlyContinue' # Valid values are 'SilentlyContinue' -> Don't show any debug messages; Continue -> Show debug messages.
+# Output of debug messages can also be handled by setting '$global:DebugPreference = "Continue"'
 
 function Resolve-Exception {
   [CmdletBinding()]
@@ -63,9 +64,9 @@ function Get-SqlFactoryFromConnectionString {
     [String] $ConnectionString
   )
 
-  if ($ConnectionString.Contains('Initial Catalog')) {
+  if ($ConnectionString.ToLower().Contains('initial catalog')) {
     return 'VI.DB.ViSqlFactory'
-  } elseif ( $ConnectionString.Contains('url=')) {
+  } elseif ( $ConnectionString.ToLower().Contains('url=')) {
     return 'QBM.AppServer.Client.ServiceClientFactory'
   } else {
     return 'VI.DB.Oracle.ViOracleFactory'
