@@ -887,7 +887,7 @@ $FakeData.FirmPartners | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
-$installedModules = Get-InstalledModules
+$installedModules = Get-InstalledModule
 if ($installedModules.Contains('RMB')) {
   #
   # Create Org / Business role structure
