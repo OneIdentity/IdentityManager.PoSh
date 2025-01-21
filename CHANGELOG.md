@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.0.25] - 2025-01-21
+
+### Fixes
+
+- Fix issues with demo script in contribute on older Identity Manager versions
+
+### Testing
+
+### Miscellaneous
+
+- Add method to show system informations on startup
+- Add method Get-InstalledModules to list installed modules from database
+
 ## [0.0.24] - 2025-01-16
 
 ### Fixes
