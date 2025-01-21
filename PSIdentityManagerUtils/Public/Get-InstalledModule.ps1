@@ -1,4 +1,4 @@
-function Get-InstalledModules {
+function Get-InstalledModule {
     [CmdletBinding()]
     [OutputType([String[]])]
     Param (
