@@ -64,6 +64,15 @@ function New-IdentityManagerSession {
       $sessionfactory = [VI.DB.DbApp]::ConnectTo($ConnectionString).Using($factory).BuildSessionFactory()
       $session = [VI.DB.Sync.SyncSessionFactoryExtensions]::Open($sessionfactory, $AuthenticationString)
 
+      # Add Factory as custom PowerShell property to session object
+      try {
+        if ($null -eq $session.PSObject.Members['Factory']) {
+          $session | Add-Member -NotePropertyName 'Factory' -NotePropertyValue $sessionfactory
+        }
+      } catch {
+        Resolve-Exception -ExceptionObject $PSitem
+      }
+
       # Add session to global session store
       $Global:imsessions.Add($Prefix, @{ Factory = $sessionfactory; Session = $session })
 

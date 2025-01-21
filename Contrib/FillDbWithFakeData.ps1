@@ -102,14 +102,14 @@ Write-Information "Session for $($Session.Display)"
 # Fail fast on multiple runs - not supported
 $PersonCount = Get-TableCount -Name 'Person' -Filter "CustomProperty01 = 'Fakedata'"
 if ($PersonCount -gt 0) {
-  Write-Output "This script is not idempotent. Stopping."
-  Write-Information "Closing connection"
+  Write-Output 'This script is not idempotent. Stopping.'
+  Write-Information 'Closing connection.'
   Remove-IdentityManagerSession -Session $Session
   Exit
 }
 
 # For easy Fakedata we use Bogus - get it from https://github.com/bchavez/Bogus
-$FileToLoad = Join-Path "$PSScriptRoot" -ChildPath 'Bogus.dll'
+$FileToLoad = Join-Path "$PSScriptRoot" $(if (7 -eq $PSVersionTable.PSVersion.Major) { $(Join-Path 'net6.0' -ChildPath 'Bogus.dll') } else { $(Join-Path 'net40' -ChildPath 'Bogus.dll') })
 try {
     [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
     $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
@@ -120,7 +120,7 @@ try {
 
 # For easy QR Codes we use https://www.nuget.org/packages/QRCoder
 # https://github.com/codebude/QRCoder/
-$FileToLoad = Join-Path "$PSScriptRoot" -ChildPath 'QRCoder.dll'
+$FileToLoad = Join-Path "$PSScriptRoot" $(if (7 -eq $PSVersionTable.PSVersion.Major) { $(Join-Path 'net6.0' -ChildPath 'QRCoder.dll') } else { $(Join-Path 'net40' -ChildPath 'QRCoder.dll') })
 try {
     [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
     $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
@@ -677,6 +677,61 @@ function New-PersonInOrgs {
   Write-Debug "Done in $elapsedTime"
 }
 
+function New-OrgHierarchy {
+  param (
+      [int]$currentLevel = 1,
+      [string]$UID_ParentOrg = $null
+  )
+
+  if ($currentLevel -le $OrgStructureDepth) {
+      # Generate a random number of entries for this level
+      $numEntries = Get-Random -Minimum 5 -Maximum 11
+
+      for ($i = 1; $i -le $numEntries; $i++) {
+
+        $BusinessRoleName = "Org {0:D2}-{1:D2}" -f $currentLevel, $i
+
+        $BusinessRole = New-Org -Ident_Org "$BusinessRoleName" `
+          -InternalName $Faker.Lorem.Word() `
+          -ShortName $Faker.Lorem.Word() `
+          -UID_OrgRoot $OrgRoot.UID_OrgRoot `
+          -UID_PersonHead $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) `
+          -UID_PersonHeadSecond $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) `
+          -UID_ProfitCenter $Faker.Random.ArrayElement($($FakeData.CostCenters).UID_ProfitCenter) `
+          -UID_Department $Faker.Random.ArrayElement($($FakeData.Departments).UID_Department) `
+          -UID_Locality $Faker.Random.ArrayElement($($FakeData.Locations).UID_Locality) `
+          -UID_OrgAttestator 'RMB-AEROLE-ROLEADMIN-ATTESTATOR' `
+          -UID_RulerContainer 'RMB-AEROLE-ROLEADMIN-RULER' `
+          -UID_RulerContainerIT 'RMB-AEROLE-ROLEADMIN-RULERIT' `
+          -Description $Faker.Lorem.Sentence(3, 5) `
+          -PostalAddress $Faker.Address.StreetAddress() `
+          -Street $Faker.Address.StreetAddress() `
+          -Building $Faker.Address.BuildingNumber() `
+          -ZIPCode $Faker.Address.ZipCode() `
+          -City $Faker.Address.City() `
+          -Telephone $Faker.Phone.PhoneNumber() `
+          -TelephoneShort $Faker.Random.Number(0, 9999999) `
+          -Room $Faker.Random.Number(1, 10000) `
+          -RoomRemarks $Faker.Lorem.Word() `
+          -UID_FunctionalArea $Faker.Random.ArrayElement($($FakeData.FunctionalAreas).UID_FunctionalArea) `
+          -Commentary $Faker.Lorem.Sentence(3, 5) `
+          -Remarks $Faker.Lorem.Sentences() `
+          -CustomProperty01 'Fakedata' `
+          -Unsaved
+
+        if (-Not [string]::IsNullOrEmpty($UID_ParentOrg)) {
+            $BusinessRole.UID_ParentOrg = $UID_ParentOrg
+        }
+
+        $BusinessRole | Add-UnitOfWorkEntity -UnitOfWork $uow
+        $FakeData.BusinessRoles += $BusinessRole
+
+        # Recursive call to create the next level
+        New-OrgHierarchy -currentLevel ($currentLevel + 1) -UID_ParentOrg $BusinessRole.UID_Org
+      }
+  }
+}
+
 function HasCircularReference {
   param (
       $subordinate,
@@ -832,92 +887,42 @@ $FakeData.FirmPartners | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
-#
-# Create Org / Business role structure
-#
-Write-Information "[*] Creating Org structure"
-$st = $(get-date)
+$installedModules = Get-InstalledModules
+if ($installedModules.Contains('RMB')) {
+  #
+  # Create Org / Business role structure
+  #
+  Write-Information "[*] Creating Org structure"
+  $st = $(get-date)
 
-$OrgRoot = New-OrgRoot -Ident_OrgRoot 'FakeOrgRoot' `
-  -Description $Faker.Lorem.Sentence(3, 5) `
-  -UID_OrgAttestator 'RMB-AEROLE-ROLEADMIN-ATTESTATOR'
+  $OrgRoot = New-OrgRoot -Ident_OrgRoot 'FakeOrgRoot' `
+    -Description $Faker.Lorem.Sentence(3, 5) `
+    -UID_OrgAttestator 'RMB-AEROLE-ROLEADMIN-ATTESTATOR'
 
-$OA = Get-OrgRootAssign -UID_OrgRoot $OrgRoot.UID_OrgRoot
+  $OA = Get-OrgRootAssign -UID_OrgRoot $OrgRoot.UID_OrgRoot
 
-$OA | ForEach-Object {
-    try {
-        $_.IsDirectAssignmentAllowed = $true
-    } catch {
-        # Silent fail
-    }
+  $OA | ForEach-Object {
+      try {
+          $_.IsDirectAssignmentAllowed = $true
+      } catch {
+          # Silent fail
+      }
 
-    try {
-        $_.IsAssignmentAllowed = $true
-    } catch {
-        # Silent fail
-    }
+      try {
+          $_.IsAssignmentAllowed = $true
+      } catch {
+          # Silent fail
+      }
 
-    $_ | Set-OrgRootAssign | Out-Null
+      $_ | Set-OrgRootAssign | Out-Null
+  }
+
+  New-OrgHierarchy
+  $et = New-TimeSpan $st $(get-date)
+  Write-Debug "Done in $et"
+} else {
+  Write-Warning "[*] Skipping creating of Org structure because of missing RMB module."
 }
-
-function New-OrgHierarchy {
-    param (
-        [int]$currentLevel = 1,
-        [string]$UID_ParentOrg = $null
-    )
-
-    if ($currentLevel -le $OrgStructureDepth) {
-        # Generate a random number of entries for this level
-        $numEntries = Get-Random -Minimum 5 -Maximum 11
-
-        for ($i = 1; $i -le $numEntries; $i++) {
-
-          $BusinessRoleName = "Org {0:D2}-{1:D2}" -f $currentLevel, $i
-
-          $BusinessRole = New-Org -Ident_Org "$BusinessRoleName" `
-            -InternalName $Faker.Lorem.Word() `
-            -ShortName $Faker.Lorem.Word() `
-            -UID_OrgRoot $OrgRoot.UID_OrgRoot `
-            -UID_PersonHead $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) `
-            -UID_PersonHeadSecond $Faker.Random.ArrayElement($($FakeData.Identities).UID_Person) `
-            -UID_ProfitCenter $Faker.Random.ArrayElement($($FakeData.CostCenters).UID_ProfitCenter) `
-            -UID_Department $Faker.Random.ArrayElement($($FakeData.Departments).UID_Department) `
-            -UID_Locality $Faker.Random.ArrayElement($($FakeData.Locations).UID_Locality) `
-            -UID_OrgAttestator 'RMB-AEROLE-ROLEADMIN-ATTESTATOR' `
-            -UID_RulerContainer 'RMB-AEROLE-ROLEADMIN-RULER' `
-            -UID_RulerContainerIT 'RMB-AEROLE-ROLEADMIN-RULERIT' `
-            -Description $Faker.Lorem.Sentence(3, 5) `
-            -PostalAddress $Faker.Address.StreetAddress() `
-            -Street $Faker.Address.StreetAddress() `
-            -Building $Faker.Address.BuildingNumber() `
-            -ZIPCode $Faker.Address.ZipCode() `
-            -City $Faker.Address.City() `
-            -Telephone $Faker.Phone.PhoneNumber() `
-            -TelephoneShort $Faker.Random.Number(0, 9999999) `
-            -Room $Faker.Random.Number(1, 10000) `
-            -RoomRemarks $Faker.Lorem.Word() `
-            -UID_FunctionalArea $Faker.Random.ArrayElement($($FakeData.FunctionalAreas).UID_FunctionalArea) `
-            -Commentary $Faker.Lorem.Sentence(3, 5) `
-            -Remarks $Faker.Lorem.Sentences() `
-            -CustomProperty01 'Fakedata' `
-            -Unsaved
-
-          if (-Not [string]::IsNullOrEmpty($UID_ParentOrg)) {
-              $BusinessRole.UID_ParentOrg = $UID_ParentOrg
-          }
-
-          $BusinessRole | Add-UnitOfWorkEntity -UnitOfWork $uow
-          $FakeData.BusinessRoles += $BusinessRole
-
-          # Recursive call to create the next level
-          New-OrgHierarchy -currentLevel ($currentLevel + 1) -UID_ParentOrg $BusinessRole.UID_Org
-        }
-    }
-}
-
-New-OrgHierarchy
-$et = New-TimeSpan $st $(get-date)
-Write-Debug "Done in $et"
 
 $st = $(get-date)
 Write-Information "[*] Wire Identities with Cost Centers, Departments, Locations, Business Roles, Managers (direct and indirect)"
@@ -942,9 +947,11 @@ for ($i = 0; $i -lt $FakeData.Identities.Count; $i++)
   $UID_Locality = $Faker.Random.ArrayElement($($FakeData.Locations).UID_Locality)
   $FakeData.Identities[$i].UID_Locality = $UID_Locality
 
-  # Assign a Business Role to every identity
-  $UID_Org = $Faker.Random.ArrayElement($($FakeData.BusinessRoles).UID_Org)
-  $FakeData.Identities[$i].UID_Org = $UID_Org
+  if ($installedModules.Contains('RMB')) {
+    # Assign a Business Role to every identity
+    $UID_Org = $Faker.Random.ArrayElement($($FakeData.BusinessRoles).UID_Org)
+    $FakeData.Identities[$i].UID_Org = $UID_Org
+  }
 
   # Give Identities a fixed default email address
   $FakeData.Identities[$i].DefaultEMailAddress = $FakeData.Identities[$i].CentralAccount + '@fakedata.local'
@@ -1290,7 +1297,9 @@ $CommonAeRoles | ForEach-Object {
     }
 }
 
-$FakeData.PersonInOrgs = New-PersonInOrgs -Session $Session -Faker $Faker -Quantity 7 -FakeData $FakeData
+if ($installedModules.Contains('RMB')) {
+  $FakeData.PersonInOrgs = New-PersonInOrgs -Session $Session -Faker $Faker -Quantity 7 -FakeData $FakeData
+}
 
 $st = $(get-date)
 Write-Debug "Adding PersonInAERoles to unit of work"

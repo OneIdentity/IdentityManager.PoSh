@@ -3,6 +3,23 @@ $ErrorActionPreference = 'Stop'
 #$DebugPreference = 'SilentlyContinue' # Valid values are 'SilentlyContinue' -> Don't show any debug messages; Continue -> Show debug messages.
 # Output of debug messages can also be handled by setting '$global:DebugPreference = "Continue"'
 
+function Get-SystemInfo {
+  Begin {
+  }
+
+  Process {
+    $platform = [System.Environment]::OSVersion.Platform
+    $psversion = $PSVersionTable.PSVersion
+    Write-Debug "System platform: $platform"
+    Write-Debug "PowerShell version: $psversion"
+  }
+
+  End {
+  }
+}
+
+Get-SystemInfo
+
 function Resolve-Exception {
   [CmdletBinding()]
   Param (
@@ -18,8 +35,7 @@ function Resolve-Exception {
   Begin {
   }
 
-  Process
-  {
+  Process {
       $sst = ''
       $st = ''
       $e = $ExceptionObject.Exception
