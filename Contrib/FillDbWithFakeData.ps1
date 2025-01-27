@@ -79,7 +79,7 @@ function Resolve-Exception {
       }
 
       if (-not ($HideStackTrace)) {
-          $msg += $([Environment]::NewLine) + "---[ScriptStackTrace]---" + $([Environment]::NewLine) + $sst + $([Environment]::NewLine) + "---[StackTrace]---" + $([Environment]::NewLine) + $st
+          $msg += $([Environment]::NewLine) + '---[ScriptStackTrace]---' + $([Environment]::NewLine) + $sst + $([Environment]::NewLine) + '---[StackTrace]---' + $([Environment]::NewLine) + $st
       }
 
       Write-Error -Message $msg -ErrorAction $CustomErrorAction
@@ -102,7 +102,7 @@ Write-Information "Session for $($Session.Display)"
 # Fail fast on multiple runs - not supported
 $PersonCount = Get-TableCount -Name 'Person' -Filter "CustomProperty01 = 'Fakedata'"
 if ($PersonCount -gt 0) {
-  Write-Output 'This script is not idempotent. Stopping.'
+  Write-Warning 'This script is not idempotent. Stopping.'
   Write-Information 'Closing connection.'
   Remove-IdentityManagerSession -Session $Session
   Exit
@@ -652,7 +652,7 @@ function New-PersonInOrgs {
       [PSCustomObject[]]$FakeData
   )
 
-  Write-Information "Creating PersonInOrg records"
+  Write-Information 'Creating PersonInOrg records'
 
   $StartTime = $(get-date)
 
@@ -689,7 +689,7 @@ function New-OrgHierarchy {
 
       for ($i = 1; $i -le $numEntries; $i++) {
 
-        $BusinessRoleName = "Org {0:D2}-{1:D2}" -f $currentLevel, $i
+        $BusinessRoleName = 'Org {0:D2}-{1:D2}' -f $currentLevel, $i
 
         $BusinessRole = New-Org -Ident_Org "$BusinessRoleName" `
           -InternalName $Faker.Lorem.Word() `
@@ -771,6 +771,39 @@ function GetGaussianRandom {
 $Faker = [Bogus.Faker]::new('en')
 $uow = New-UnitOfWork -Session $Session
 
+$InstalledModules = Get-InstalledIdentityManagerModule
+
+if ($InstalledModules.Contains('RMB')) {
+  #
+  # Create Org / Business role structure
+  #
+  Write-Information '[*] Creating OrgRoot'
+
+  $OrgRoot = New-OrgRoot -Ident_OrgRoot 'FakeOrgRoot' `
+    -Description $Faker.Lorem.Sentence(3, 5) `
+    -UID_OrgAttestator 'RMB-AEROLE-ROLEADMIN-ATTESTATOR'
+
+  $OA = Get-OrgRootAssign -UID_OrgRoot $OrgRoot.UID_OrgRoot
+
+  $OA | ForEach-Object {
+      try {
+          $_.IsDirectAssignmentAllowed = $true
+      } catch {
+          # Silent fail
+      }
+
+      try {
+          $_.IsAssignmentAllowed = $true
+      } catch {
+          # Silent fail
+      }
+
+      $_ | Set-OrgRootAssign | Out-Null
+  }
+} else {
+  Write-Warning '[*] Skipping creating OrgRoot because of missing RMB module.'
+}
+
 # Create Identities
 $FakeData.Identities = New-Identities -Session $Session -Faker $Faker -Quantity $numberOfIdentities
 
@@ -849,83 +882,61 @@ $FakeData.Locations | Where-Object UID_FunctionalArea -eq '' | ForEach-Object {
 #
 # Persist data into database - this MUST be DONE HERE otherwise we cannot find the foreign keys
 #
-Write-Information "[*] Persisting data stage 1"
+Write-Information '[*] Persisting data stage 1'
 
 $st = $(get-date)
-Write-Debug "Adding FunctionalAreas to unit of work"
+Write-Debug 'Adding FunctionalAreas to unit of work'
 $FakeData.FunctionalAreas | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding Identities to unit of work"
+Write-Debug 'Adding Identities to unit of work'
 $FakeData.Identities | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding Departments to unit of work"
+Write-Debug 'Adding Departments to unit of work'
 $FakeData.Departments | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding Cost Centers to unit of work"
+Write-Debug 'Adding Cost Centers to unit of work'
 $FakeData.CostCenters | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding Locations to unit of work"
+Write-Debug 'Adding Locations to unit of work'
 $FakeData.Locations | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding FirmPartners to unit of work"
+Write-Debug 'Adding FirmPartners to unit of work'
 $FakeData.FirmPartners | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
-$installedModules = Get-InstalledModule
-if ($installedModules.Contains('RMB')) {
+if ($InstalledModules.Contains('RMB')) {
   #
   # Create Org / Business role structure
   #
-  Write-Information "[*] Creating Org structure"
+  Write-Information '[*] Creating Org structure'
+
   $st = $(get-date)
-
-  $OrgRoot = New-OrgRoot -Ident_OrgRoot 'FakeOrgRoot' `
-    -Description $Faker.Lorem.Sentence(3, 5) `
-    -UID_OrgAttestator 'RMB-AEROLE-ROLEADMIN-ATTESTATOR'
-
-  $OA = Get-OrgRootAssign -UID_OrgRoot $OrgRoot.UID_OrgRoot
-
-  $OA | ForEach-Object {
-      try {
-          $_.IsDirectAssignmentAllowed = $true
-      } catch {
-          # Silent fail
-      }
-
-      try {
-          $_.IsAssignmentAllowed = $true
-      } catch {
-          # Silent fail
-      }
-
-      $_ | Set-OrgRootAssign | Out-Null
-  }
-
   New-OrgHierarchy
   $et = New-TimeSpan $st $(get-date)
+
   Write-Debug "Done in $et"
 } else {
-  Write-Warning "[*] Skipping creating of Org structure because of missing RMB module."
+  Write-Warning '[*] Skipping creating of Org structure because of missing RMB module.'
 }
 
 $st = $(get-date)
-Write-Information "[*] Wire Identities with Cost Centers, Departments, Locations, Business Roles, Managers (direct and indirect)"
+Write-Information '[*] Wire Identities with Cost Centers, Departments, Locations, Business Roles, Managers (direct and indirect)'
 # Wire Identities with Cost Centers, Departments
 # and add Identities additionally to Cost Centers, Departments
 for ($i = 0; $i -lt $FakeData.Identities.Count; $i++)
@@ -933,7 +944,7 @@ for ($i = 0; $i -lt $FakeData.Identities.Count; $i++)
   # Reload entities to allow further updates
   $FakeData.Identities[$i] = $FakeData.Identities[$i].Reload()
 
-  $FakeData.Identities[$i] | Add-Member -NotePropertyName "Subordinates" -NotePropertyValue @()
+  $FakeData.Identities[$i] | Add-Member -NotePropertyName 'Subordinates' -NotePropertyValue @()
 
   # Assign a Cost Center to every identity
   $UID_ProfitCenter = $Faker.Random.ArrayElement($($FakeData.CostCenters).UID_ProfitCenter)
@@ -947,7 +958,7 @@ for ($i = 0; $i -lt $FakeData.Identities.Count; $i++)
   $UID_Locality = $Faker.Random.ArrayElement($($FakeData.Locations).UID_Locality)
   $FakeData.Identities[$i].UID_Locality = $UID_Locality
 
-  if ($installedModules.Contains('RMB')) {
+  if ($InstalledModules.Contains('RMB')) {
     # Assign a Business Role to every identity
     $UID_Org = $Faker.Random.ArrayElement($($FakeData.BusinessRoles).UID_Org)
     $FakeData.Identities[$i].UID_Org = $UID_Org
@@ -1138,33 +1149,33 @@ $FakeData.ITShopOrgHasQERReuse = New-ITShopOrgHasQERReuses -Session $Session -Fa
 #
 # Persist data into database
 #
-Write-Information "[*] Persisting data stage 2"
+Write-Information '[*] Persisting data stage 2'
 $st = $(get-date)
-Write-Debug "Adding Identities to unit of work"
+Write-Debug 'Adding Identities to unit of work'
 $FakeData.Identities | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding assignment of Identities to Departments to unit of work"
+Write-Debug 'Adding assignment of Identities to Departments to unit of work'
 $FakeData.IdentityInDepartment | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding assignment of Identities to Cost Centers to unit of work"
+Write-Debug 'Adding assignment of Identities to Cost Centers to unit of work'
 $FakeData.IdentityInCostCenter | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding assignment of Identities to Locations to unit of work"
+Write-Debug 'Adding assignment of Identities to Locations to unit of work'
 $FakeData.IdentityInLocality | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding ITShop Orgs to unit of work"
+Write-Debug 'Adding ITShop Orgs to unit of work'
 $ItShop | Add-UnitOfWorkEntity -UnitOfWork $uow
 $ItShopCustomer | Add-UnitOfWorkEntity -UnitOfWork $uow
 $ItShopShelf | Add-UnitOfWorkEntity -UnitOfWork $uow
@@ -1176,13 +1187,13 @@ Write-Debug "Done in $et"
 $FakeData.AccProductGroup | Add-UnitOfWorkEntity -UnitOfWork $uow
 
 $st = $(get-date)
-Write-Debug "Adding AccProducts to unit of work I"
+Write-Debug 'Adding AccProducts to unit of work I'
 $FakeData.AccProducts | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding ProductOwners to unit of work"
+Write-Debug 'Adding ProductOwners to unit of work'
 $FakeData.ProductOwners | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
@@ -1196,7 +1207,7 @@ for ($i = 0; $i -lt $FakeData.AccProducts.Count; $i++) {
 }
 
 $st = $(get-date)
-Write-Debug "Adding AccProducts to unit of work II"
+Write-Debug 'Adding AccProducts to unit of work II'
 $FakeData.AccProducts | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
@@ -1297,30 +1308,30 @@ $CommonAeRoles | ForEach-Object {
     }
 }
 
-if ($installedModules.Contains('RMB')) {
+if ($InstalledModules.Contains('RMB')) {
   $FakeData.PersonInOrgs = New-PersonInOrgs -Session $Session -Faker $Faker -Quantity 7 -FakeData $FakeData
 }
 
 $st = $(get-date)
-Write-Debug "Adding PersonInAERoles to unit of work"
+Write-Debug 'Adding PersonInAERoles to unit of work'
 $FakeData.PersonInAERoles | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding QERReuses to unit of work"
+Write-Debug 'Adding QERReuses to unit of work'
 $FakeData.QERReuses | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding ITShopOrgHasQERReuse to unit of work"
+Write-Debug 'Adding ITShopOrgHasQERReuse to unit of work'
 $FakeData.ITShopOrgHasQERReuse | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
 $st = $(get-date)
-Write-Debug "Adding PersonInOrg to unit of work"
+Write-Debug 'Adding PersonInOrg to unit of work'
 $FakeData.PersonInOrgs | Add-UnitOfWorkEntity -UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
@@ -1328,13 +1339,13 @@ Write-Debug "Done in $et"
 #
 # Real save into database
 #
-Write-Information "Saving data into database"
+Write-Information 'Saving data into database'
 $st = $(get-date)
 Save-UnitOfWork $uow
 $et = New-TimeSpan $st $(get-date)
 Write-Debug "Done in $et"
 
-Write-Information "Closing connection"
+Write-Information 'Closing connection'
 $st = $(get-date)
 Remove-IdentityManagerSession -Session $Session
 $et = New-TimeSpan $st $(get-date)
@@ -1348,6 +1359,7 @@ Write-Information "[*] Total runtime: $ElapsedTimeTotal"
 # update ITShopOrgHasQERReuse set XOrigin = 0 where uid_QERReuse in (select uid_QERReuse from QERReuse where CustomProperty01 = 'Fakedata')
 # delete from ITShopOrgHasQERReuse where uid_QERReuse in (select uid_QERReuse from QERReuse where CustomProperty01 = 'Fakedata')
 # update PersonInAERole set XOrigin = 0 where UID_Person in (select UID_Person from Person where CustomProperty01 = 'Fakedata')
+# update PersonInOrg set XOrigin = 0 where UID_Person in (select UID_Person from Person where CustomProperty01 = 'Fakedata')
 # delete from PersonInAERole where UID_Person in (select UID_Person from Person where CustomProperty01 = 'Fakedata')
 # delete from AERole where CustomProperty01 = 'Fakedata'
 # delete from PersonInOrg where UID_Org in (select UID_Org from Org where CustomProperty01 = 'Fakedata')

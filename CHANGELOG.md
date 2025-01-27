@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.0.26] - 2025-01-27
+
+### Fixes
+
+- Fix issues with demo script in older Identity Manager releases
+
+### Testing
+
+### Miscellaneous
+
+- Code cleanup
+- Rename Get-InstalledModule to Get-InstalledIdentityManagerModule for fix of overwritten default Powershell cmdlet
+
 ## [0.0.25] - 2025-01-21
 
 ### Fixes

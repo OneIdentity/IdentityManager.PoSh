@@ -36,6 +36,7 @@
 
       ForEach ($tableProperty in $tables) {
         $funcName = $tableProperty.TableName
+        Write-Debug "Generate Get-$Prefix$funcName"
 
         # Do not update progress for every function. It takes to much time.
         if ($progressCount % 10 -eq 0) {

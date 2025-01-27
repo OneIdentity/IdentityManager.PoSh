@@ -50,9 +50,7 @@ function Remove-Entity {
 
       # Save entity via UnitOfWork to database
       if (-Not $Unsaved) {
-        $uow = New-UnitOfWork -Session $sessionToUse
-        Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $Entity
-        Save-UnitOfWork -UnitOfWork $uow
+        [VI.DB.Entities.Entity]::SaveAsync($Entity, $sessionToUse, $noneToken).GetAwaiter().GetResult() | Out-Null
       }
 
       $Entity

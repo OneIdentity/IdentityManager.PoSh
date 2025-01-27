@@ -36,6 +36,7 @@
 
       ForEach ($tableProperty in $tables) {
         $funcName = $tableProperty.TableName
+        Write-Debug "Generate New-$Prefix$funcName"
 
         # Do not update progress for every function. It takes to much time.
         if ($progressCount % 10 -eq 0) {
@@ -103,11 +104,8 @@ $([Environment]::NewLine)
         }
       }
 
-      if (`$Unsaved) {
-        New-Entity -Session `$session -Type '$funcName' -Properties `$properties -Unsaved
-      } else {
-        New-Entity -Session `$session -Type '$funcName' -Properties `$properties
-      }
+      New-Entity -Session `$session -Type '$funcName' -Properties `$properties -Unsaved:`$Unsaved
+
     } catch {
       Resolve-Exception -ExceptionObject `$PSitem
     }
