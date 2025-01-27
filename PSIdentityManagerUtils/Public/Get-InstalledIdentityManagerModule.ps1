@@ -1,4 +1,4 @@
-function Get-InstalledModule {
+function Get-InstalledIdentityManagerModule {
     [CmdletBinding()]
     [OutputType([String[]])]
     Param (

@@ -49,9 +49,7 @@ function New-Entity {
 
       # Save entity via UnitOfWork to Database
       if (-Not $Unsaved) {
-        $uow = New-UnitOfWork -Session $sessionToUse
-        Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $entity
-        Save-UnitOfWork -UnitOfWork $uow
+        [VI.DB.Entities.Entity]::SaveAsync($Entity, $sessionToUse, $noneToken).GetAwaiter().GetResult() | Out-Null
 
         # Reload the entity to allow further updates
         $entity = [VI.DB.Entities.Entity]::ReloadAsync($entity, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
