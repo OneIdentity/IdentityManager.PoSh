@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.0.27] - 2025-02-11
+
+### Fixes
+
+- Fix issue #46: Wrong parameter type for Invoke-ImEvent event parameters
+
+### Testing
+
+- Add test case for generating events with parameters
+
+### Miscellaneous
+
 ## [0.0.26] - 2025-01-27
 
 ### Fixes

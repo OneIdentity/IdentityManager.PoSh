@@ -18,7 +18,7 @@
     [string] $Identity,
     [Parameter(Mandatory = $true, HelpMessage = 'The eventname to generate')]
     [ValidateNotNullOrEmpty()]
-    [String] $EventName,
+    [string] $EventName,
     [Parameter(Mandatory = $false, HelpMessage = 'The parameter key value pairs for the event')]
     [Hashtable] $EventParameters
   )
@@ -44,7 +44,14 @@
       $uow = New-UnitOfWork -Session $sessionToUse
 
       try {
-        ($uow).GenerateAsync($Entity, $EventName, $EventParameters, $noneToken).GetAwaiter().GetResult() | Out-Null
+        $ep = New-Object 'System.Collections.Generic.Dictionary[string, object]'
+        if ($EventParameters) {
+          foreach ($key in $EventParameters.Keys) {
+              $ep.Add($key, $EventParameters[$key])
+          }
+        }
+
+        ($uow).GenerateAsync($Entity, $EventName, $ep, $noneToken).GetAwaiter().GetResult() | Out-Null
       }
       catch {
         Resolve-Exception -ExceptionObject $PSitem

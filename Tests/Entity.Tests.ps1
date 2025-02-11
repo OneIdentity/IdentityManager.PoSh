@@ -248,11 +248,27 @@ Describe 'Entity' {
             $events | Should -Not -BeNullOrEmpty
         }
 
-        It 'Can fire event' {
+        It 'Can fire event I' {
             $randomLastName = [String][System.Guid]::NewGuid()
             $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName; 'EntryDate' = [DateTime]::Today.AddDays(-10)}
 
             { Invoke-ImEvent $pO -EventName 'CHECK_EXITDATE'} | Should -Not -Throw
+
+            Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay | Out-Null
+        }
+
+        It 'Can fire event II' {
+            # This test will only pass on a database WITHOUT active mail delivery.
+
+            $randomLastName = [String][System.Guid]::NewGuid()
+            $pO = New-Entity -Type 'Person' -Properties @{'FirstName' = 'Max'; 'LastName' = $randomLastName; 'DefaultEmailAddress' = 'foobar@test.local'}
+
+            {
+                $params = @{
+                    PwdErrors = 'FooBar'
+                }
+                Invoke-ImEvent $pO -EventName 'PwdError' -EventParameters $params
+            } | Should -Throw '*Error generating processes for event PwdError.*'
 
             Remove-Entity -Type 'Person' -Identity ($pO).UID_Person -IgnoreDeleteDelay | Out-Null
         }
