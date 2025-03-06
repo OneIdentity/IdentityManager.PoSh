@@ -178,7 +178,7 @@ function Add-IdentityManagerProductFile {
   }
 
   # Support Identity Manager after 9.2 with version with PowerShell 7
-  if (7 -eq $PSVersionTable.PSVersion.Major -and $ViDBVersion.FileMajorPart -ge 9 -and $ViDBVersion.FileMinorPart -gt 2) {
+  if (7 -eq $PSVersionTable.PSVersion.Major -and (($ViDBVersion.FileMajorPart -eq 9 -and $ViDBVersion.FileMinorPart -gt 2) -or ($ViDBVersion.FileMajorPart -eq 10 -and $ViDBVersion.FileMinorPart -ge 0))) {
     if ($IsWindows) {
       Add-FileToAppDomain -BasePath $(Join-Path $oneImBasePath -ChildPath 'net8.0') -File 'Microsoft.Data.SqlClient.dll' | Out-Null
     } elseif ($IsLinux) {
