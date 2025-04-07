@@ -23,7 +23,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 Import-Module $(Join-Path "$PSScriptRoot" -ChildPath ".." | Join-Path -ChildPath 'PSIdentityManagerUtils' | Join-Path -ChildPath 'PSIdentityManagerUtils.psm1')
 
-$ModulesToAdd = 'QER', 'RMB'
+$ModulesToAdd = 'DPR', 'QER', 'RMB'
 
 $numberOfIdentities = 100
 $minSubordinates = 5
@@ -36,6 +36,7 @@ $numberOfFirmPartner = 20
 $numberOfFunctionalAreas = 20
 $NumberOfItShopProducts = 1000
 $OrgStructureDepth = 3
+$NumberOfCustomTargetSystems = 5
 
 function Resolve-Exception {
   [CmdletBinding()]
@@ -417,6 +418,7 @@ function New-FunctionalAreas {
 
     $FunctionalArea
   }
+
   $ElapsedTime = New-TimeSpan $StartTime $(get-date)
   Write-Debug "Done in $elapsedTime"
 }
@@ -767,6 +769,110 @@ function GetGaussianRandom {
   return [int]$randNormal
 }
 
+function New-CustomTargetSystem {
+  [CmdletBinding()]
+  param (
+      [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The session to use')]
+      [ValidateNotNull()]
+      [VI.DB.Entities.ISession] $Session,
+      [parameter(Mandatory = $true, Position = 1, HelpMessage = 'The Bogus faker instance')]
+      [ValidateNotNull()]
+      [Bogus.Faker] $Faker,
+      [parameter(Mandatory = $true, Position = 2, HelpMessage = 'The number of fake objects')]
+      [int] $Quantity
+  )
+
+  try {
+    # Load VI.TSUtils.dll as we need if to create a custom target system
+    [System.Reflection.Assembly]::LoadFrom([io.path]::combine($ProductFilePath, 'VI.TSUtils.dll')) | Out-Null
+  } catch {
+    Resolve-Exception -ExceptionObject $PSitem
+  }
+
+  for ($i = 1; $i -le $Quantity; $i++) {
+    # Create custom target system type and save it immediately
+    $Ident_TargetSystemType = $($Faker.Commerce.ProductName()).Replace(' ', '-')
+    $DNS = New-DPRNameSpace -Ident_DPRNameSpace $Ident_TargetSystemType `
+      -Description $Faker.Lorem.Sentences() `
+      -DisplayName $Ident_TargetSystemType
+
+    $URB = New-Entity -Type 'UNSRootB' `
+      -Properties @{
+        UID_DPRNameSpace = $DNS.UID_DPRNameSpace
+        Ident_UNSRoot = $Ident_TargetSystemType + "-$i"
+        DisplayName = $Ident_TargetSystemType + "-$i"
+        Description = $Faker.Lorem.Sentences()
+        IsNoWrite = $true
+        IsMemberOfEnabled = $true # Group membership as MVP
+        GroupUsageMask = 3 # Groups = 1; System Entitlement 1 = 2; System Entitlement 2 = 4; System Entitlement 3 = 8
+        UID_AERoleOwner = 'TSB-AEROLE-NAMESPACEADMIN-UNSB'
+      }
+
+    # Create TSB AccountDefinition
+    $TAD = New-Entity -Type 'TSBAccountDef' `
+      -Properties @{
+        Ident_TSBAccountDef = "Accounts@$Ident_TargetSystemType"
+        PTDInheritAccountDef = 1
+        PFDInheritAccountDef = 1
+        PMDInheritAccountDef = 1
+        PSIInheritAccountDef = 1
+        UID_DialogTableAccountType = 'TSB-T-UNSAccountB'
+        ObjectKeyTargetSystem = $URB.XObjectKey
+        UID_TSBBehaviorDefault = 'TSB-FullManaged'
+        Description = $Faker.Lorem.Sentences()
+        CustomProperty01 = 'Fakedata'
+      }
+
+    # Create IT Data Mapping
+
+    $dialogColumns = @{
+      IsGroupAccount_UNSGroupB = 'TSB-B871B45D47FC7D8C30747CACC4DC00FF';
+      IsGroupAccount_UNSGroupB1 = 'TSB-4FCB4A495D7E2B35E674FE66E28CA44B';
+      IsGroupAccount_UNSGroupB2 = 'TSB-66C74F26EEF8B1A1FABFBF084E318022';
+      IsGroupAccount_UNSGroupB3 = 'TSB-A817E34959FD1842D1DF080E4ED80C1D'
+    }
+
+    ForEach($k in $dialogColumns.Keys) {
+      New-Entity -Type 'TSBITDataMapping' `
+      -Properties @{
+        UID_TSBAccountDef = $TAD.UID_TSBAccountDef
+        UID_DialogColumn = $dialogColumns[$k]
+        UseAlwaysDefaultValue = 1
+        FixValue = 1
+      } | Out-Null
+    }
+
+    # Create Groups
+    for ($j = 1; $j -le 100; $j++) {
+      $GroupName = '{0} Group {1:D3}' -f $Ident_TargetSystemType, $j
+      New-Entity -Type 'UNSGroupB' `
+        -Properties @{
+          CN = $GroupName
+          DisplayName= $GroupName
+          ObjectGuid = $Faker.Random.Guid().Guid
+          Description = $Faker.Lorem.Sentences()
+          UID_UNSRootB = $URB.UID_UNSRootB
+        } | Out-Null
+    }
+
+    # System Entitlement 1
+    for ($j = 1; $j -le 100; $j++) {
+      $GroupName = '{0} Group {1:D3}' -f $Ident_TargetSystemType, $j
+      New-Entity -Type 'UNSGroupB1' `
+        -Properties @{
+          CN = $GroupName
+          DisplayName= $GroupName
+          ObjectGuid = $Faker.Random.Guid().Guid
+          Description = $Faker.Lorem.Sentences()
+          UID_UNSRootB = $URB.UID_UNSRootB
+        } | Out-Null
+    }
+
+    # Add TSBAccountDef to the target system
+    Set-Entity -Type 'UNSRootB' -Identity ($URB).XObjectKey -Properties @{'UID_TSBAccountDef' = $TAD.UID_TSBAccountDef} | Out-Null
+  }
+}
+
 [Bogus.Randomizer]::Seed = [System.Random]::new($Seed)
 $Faker = [Bogus.Faker]::new('en')
 $uow = New-UnitOfWork -Session $Session
@@ -933,6 +1039,18 @@ if ($InstalledModules.Contains('RMB')) {
   Write-Debug "Done in $et"
 } else {
   Write-Warning '[*] Skipping creating of Org structure because of missing RMB module.'
+}
+
+# Create custom target systems
+$CustomTargetSystemsAllowed = Get-ConfigParm -Key 'TargetSystem\UNS\CreateNewRoot'
+if ($CustomTargetSystemsAllowed.Value -eq 1) {
+  $st = $(get-date)
+  Write-Information '[*] Creating custom target systems'
+  New-CustomTargetSystem -Session $Session -Faker $Faker -Quantity $NumberOfCustomTargetSystems
+  $et = New-TimeSpan $st $(get-date)
+  Write-Debug "Done in $et"
+} else {
+  Write-Warning '[*] Skipping creating custom target system because of deactivated ConfigParm TargetSystem\UNS\CreateNewRoot.'
 }
 
 $st = $(get-date)
@@ -1377,6 +1495,22 @@ Write-Information "[*] Total runtime: $ElapsedTimeTotal"
 
 # delete from Org where CustomProperty01 = 'Fakedata'
 # delete from OrgRoot where Ident_OrgRoot = 'FakeOrgRoot'
+
+# update PersonHasTSBAccountDef set xorigin = 0
+# delete from PersonHasTSBAccountDef
+# delete UNSGroupB1
+# delete UNSGroupB
+# delete from TSBITDataMapping where uid_TSBAccountDef in (
+# 	select uid_TSBAccountDef from TSBAccountDef where CustomProperty01 = 'Fakedata'
+# )
+# delete from TSBAccountDefHasBehavior where uid_TSBAccountDef in (
+# 	select uid_TSBAccountDef from TSBAccountDef where CustomProperty01 = 'Fakedata'
+# )
+# update unsrootb set uid_tsbaccountdef = null
+# delete TSBAccountDef
+
+# delete unsrootb
+# delete DPRNameSpace where UID_DPRNameSpace not in ('ADS-DPRNameSpace-ADS','LDP-DPRNameSpace-LDAP')
 
 # delete from Person where CustomProperty01 = 'Fakedata'
 # delete from Department where CustomProperty01 = 'Fakedata'

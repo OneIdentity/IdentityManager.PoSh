@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.0.28] - 2025-04-07
+
+### Fixes
+
+### Testing
+
+- Add test cases for Get-Configparm
+
+### Miscellaneous
+
+- Add method Get-Configparm to get all configuration settings
+- Extend FillDbWithFakeData with custom target systems
+
 ## [0.0.27] - 2025-02-11
 
 ### Fixes
