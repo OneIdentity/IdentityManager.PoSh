@@ -1,7 +1,8 @@
 {
     "powershell.powerShellAdditionalExePaths": {
         "Windows PowerShell 5.1": "C:\\Windows\\system32\\WindowsPowerShell\\v1.0\\powershell.exe",
-        "Windows PowerShell 7": "C:\\Program Files\\PowerShell\\7\\pwsh.exe"
+        "Windows PowerShell 7": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+        "Windows PowerShell 7 Preview": "C:\\temp\\t5\\pwsh.exe"
     },
-    "powershell.powerShellDefaultVersion": "Windows PowerShell 5.1"
+    "powershell.powerShellDefaultVersion": "Windows PowerShell 7 Preview"
 }

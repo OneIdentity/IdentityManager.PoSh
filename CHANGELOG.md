@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.0.29] - 2025-10-02
+
+### Fixes
+
+- Prepare support for Dotnet 10
+
 ## [0.0.28] - 2025-04-07
 
 ### Fixes

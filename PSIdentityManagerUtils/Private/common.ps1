@@ -178,12 +178,26 @@ function Add-IdentityManagerProductFile {
   }
 
   # Support Identity Manager after 9.2 with version with PowerShell 7
-  if (7 -eq $PSVersionTable.PSVersion.Major -and (($ViDBVersion.FileMajorPart -eq 9 -and $ViDBVersion.FileMinorPart -gt 2) -or ($ViDBVersion.FileMajorPart -eq 10 -and $ViDBVersion.FileMinorPart -ge 0))) {
-    if ($IsWindows) {
-      Add-FileToAppDomain -BasePath $(Join-Path $oneImBasePath -ChildPath 'net8.0') -File 'Microsoft.Data.SqlClient.dll' | Out-Null
-    } elseif ($IsLinux) {
-      Add-FileToAppDomain -BasePath $(Join-Path $(Join-Path $(Join-Path $(Join-Path $oneImBasePath -ChildPath 'runtimes') -ChildPath 'unix') -ChildPath 'lib') -ChildPath 'net8.0') -File 'Microsoft.Data.SqlClient.dll' | Out-Null
-    }
+  if ($PSVersionTable.PSVersion.Major -eq 7 -and (
+      ($ViDBVersion.FileMajorPart -eq 9 -and $ViDBVersion.FileMinorPart -gt 2) -or
+      ($ViDBVersion.FileMajorPart -ge 10)
+  )) {
+      switch -Regex ("$($ViDBVersion.FileMajorPart).$($ViDBVersion.FileMinorPart)") {
+          '^9\.3$'   { $framework = 'net8.0' }
+          '^10\.'    { $framework = 'net9.0' }
+          default    { return }
+      }
+
+      if ($IsWindows) {
+          $basePath = Join-Path $oneImBasePath $framework
+      } elseif ($IsLinux) {
+          $basePath = Join-Path $oneImBasePath `
+            (Join-Path "runtimes" `
+              (Join-Path "unix" `
+                (Join-Path "lib" $framework)))
+      }
+
+      Add-FileToAppDomain -BasePath $basePath -File 'Microsoft.Data.SqlClient.dll' | Out-Null
   }
 
   if ($TraceMode) {
