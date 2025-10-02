@@ -44,12 +44,12 @@ function New-Entity {
 
       # Set property values
       foreach($property in $Properties.Keys) {
-        Set-EntityColumnValue -Entity $Entity -Column $property -Value $Properties[$property]
+        Set-EntityColumnValue -Entity $entity -Column $property -Value $Properties[$property]
       }
 
       # Save entity via UnitOfWork to Database
       if (-Not $Unsaved) {
-        [VI.DB.Entities.Entity]::SaveAsync($Entity, $sessionToUse, $noneToken).GetAwaiter().GetResult() | Out-Null
+        [VI.DB.Entities.Entity]::SaveAsync($entity, $sessionToUse, $noneToken).GetAwaiter().GetResult() | Out-Null
 
         # Reload the entity to allow further updates
         $entity = [VI.DB.Entities.Entity]::ReloadAsync($entity, $sessionToUse, [VI.DB.Entities.EntityLoadType]::Interactive, $noneToken).GetAwaiter().GetResult()
