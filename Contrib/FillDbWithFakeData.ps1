@@ -490,13 +490,24 @@ function New-AccProductGroups {
   $qrCodeData = $qrGenerator.CreateQrCode($TextToEncode, 'M')
   $qrCode = New-Object -TypeName QRCoder.PngByteQRCode -ArgumentList ($qrCodeData)
   $byteArray = $qrCode.GetGraphic(5, [byte[]]($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)), [byte[]]($Faker.Random.Int(0,255), $Faker.Random.Int(0,255), $Faker.Random.Int(0,255)))
-  
-  $AccProductGroup = New-AccProductGroup -Ident_AccProductGroup $ProductName `
-    -Description $Faker.Lorem.Sentence(3, 5) `
-    -Remarks $Faker.Lorem.Sentences() `
-    -CustomProperty01 'Fakedata' `
-    -JPegPhoto $byteArray `
-    -Unsaved
+
+  $metaData = [VI.DB.Entities.SessionExtensions]::MetaData($Session)
+  $tableMetaData = $metaData.GetTableAsync('AccProductGroup', [System.Threading.CancellationToken]::None).GetAwaiter().GetResult()
+
+  $accProductGroupParams = @{
+    Ident_AccProductGroup = $ProductName
+    Description           = $Faker.Lorem.Sentence(3, 5)
+    Remarks               = $Faker.Lorem.Sentences()
+    CustomProperty01      = 'Fakedata'
+    JPegPhoto             = $byteArray
+    Unsaved               = $true
+  }
+
+  if ($tableMetaData.Columns.IsAvailable('IsServiceNowEnabled')) {
+    $accProductGroupParams['IsServiceNowEnabled'] = $false
+  }
+
+  $AccProductGroup = New-AccProductGroup @accProductGroupParams
 
   $AccProductGroup
 

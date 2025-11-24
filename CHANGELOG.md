@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.0.30] - 2025-11-24
+
+### Fixes
+
+- Fix issues during creation of AccProductGroups
+
 ## [0.0.29] - 2025-10-02
 
 ### Fixes
