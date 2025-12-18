@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.0.32] - 2025-12-18
+
+### Miscellaneous
+
+- Clarify dependencies for v9.3 and PowerShell
+
 ## [0.0.31] - 2025-12-18
 
 ### Miscellaneous

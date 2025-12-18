@@ -101,11 +101,11 @@ We successfully used [v7.6.0-preview.5](https://github.com/PowerShell/PowerShell
 
 ### One Identity Manager up from version 9.3x
 
-* PowerShell 7+
+* PowerShell 7.4+
 
 :bangbang: Warning
 
-The One Identity Manager up from version 9.3x can only be used with PowerShell 7+.
+The One Identity Manager up from version 9.3x can only be used with PowerShell 7.4+.
 
 ### One Identity Manager prior to version 9.3x
 
