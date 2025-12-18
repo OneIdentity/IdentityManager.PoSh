@@ -6,7 +6,7 @@
 
     RootModule = 'PSIdentityManagerUtils.psm1'
 
-    ModuleVersion = '0.0.30'
+    ModuleVersion = '0.0.31'
 
     Guid = 'a9a73145-c9e6-43c9-8dc9-0ab4831da948'
 
