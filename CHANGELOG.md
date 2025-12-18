@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.0.31] - 2025-12-18
+
+### Miscellaneous
+
+- Update README.md to reflect support for v10.0 LTS
+- Fix formatting in README.md
+
 ## [0.0.30] - 2025-11-24
 
 ### Fixes
