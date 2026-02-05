@@ -1,4 +1,23 @@
-﻿function New-UnitOfWork {
+﻿<#!
+.SYNOPSIS
+Creates a new unit of work.
+
+.DESCRIPTION
+Creates and returns a new unit of work for the resolved session.
+
+.PARAMETER Session
+The session to use.
+
+.INPUTS
+None
+
+.OUTPUTS
+VI.DB.Entities.IUnitOfWork
+
+.EXAMPLE
+New-UnitOfWork
+#>
+function New-UnitOfWork {
   [CmdletBinding()]
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]

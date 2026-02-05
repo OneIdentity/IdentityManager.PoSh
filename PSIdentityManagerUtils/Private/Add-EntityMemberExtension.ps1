@@ -1,4 +1,29 @@
-﻿function Add-EntityMemberExtension {
+﻿<#!
+.SYNOPSIS
+Adds dynamic members to an Identity Manager entity.
+
+.DESCRIPTION
+Adds column-backed script properties and a Reload() script method to the provided entity.
+Each column is exposed as a dynamic property that reads/writes via Get-EntityColumnValue
+and Set-EntityColumnValue. The Reload() method re-fetches the entity using the resolved
+session and re-applies the extensions.
+
+.PARAMETER Entity
+The entity to extend. Accepts input from the pipeline.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+VI.DB.Entities.IEntity
+
+.EXAMPLE
+$entity | Add-EntityMemberExtension
+
+.EXAMPLE
+Add-EntityMemberExtension -Entity $entity
+#>
+function Add-EntityMemberExtension {
   [CmdletBinding()]
   Param (
     [parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, HelpMessage = 'The entity to extend')]

@@ -13,3 +13,5 @@ $Global:modulesToAdd = 'QER'
 $Global:connectionString2 = 'Data Source=127.0.0.1;Initial Catalog=DB;User ID=sa;Password=***;Pooling=False'
 $Global:ProductFilePath2 = 'D:\ClientTools'
 $Global:authenticationString2 = 'Module=DialogUser;User=viadmin;Password=***'
+
+$global:DebugPreference = "Continue"

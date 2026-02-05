@@ -1,3 +1,38 @@
+<#!
+.SYNOPSIS
+Updates an entity.
+
+.DESCRIPTION
+Loads an entity if needed, applies property values, and saves it unless `Unsaved`
+is specified. Reloads the entity after save.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Entity
+Entity to interact with.
+
+.PARAMETER Type
+The table name of the object to modify.
+
+.PARAMETER Identity
+Load object by UID or XObjectKey.
+
+.PARAMETER Properties
+Hashtable of column values to set.
+
+.PARAMETER Unsaved
+Do not automatically save the entity.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+VI.DB.Entities.IEntity
+
+.EXAMPLE
+Set-Entity -Type 'Person' -Identity $uid -Properties @{ Firstname = 'Alex' }
+#>
 function Set-Entity {
   [CmdletBinding()]
   Param (

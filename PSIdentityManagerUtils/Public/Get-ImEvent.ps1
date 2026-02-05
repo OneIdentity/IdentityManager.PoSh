@@ -1,4 +1,33 @@
-﻿function Get-ImEvent() {
+﻿<#!
+.SYNOPSIS
+Gets available Identity Manager events for an entity.
+
+.DESCRIPTION
+Loads an entity (or uses the provided entity) and returns available event names
+from the QBMEvent table.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Entity
+Entity to interact with.
+
+.PARAMETER Type
+The table name of the object.
+
+.PARAMETER Identity
+Load object by UID or XObjectKey.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+System.String
+
+.EXAMPLE
+Get-ImEvent -Type 'Person' -Identity $uid
+#>
+function Get-ImEvent() {
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]
     [ValidateScript({

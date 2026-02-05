@@ -1,3 +1,29 @@
+<#!
+.SYNOPSIS
+Gets configuration parameters from Identity Manager.
+
+.DESCRIPTION
+Retrieves configuration parameters using the current or provided session. When
+`Key` is specified, filters the result to a single configuration parameter.
+
+.PARAMETER Session
+The session to use. If not provided, the default session is resolved.
+
+.PARAMETER Key
+The config parameter key to query for. If empty, all parameters are returned.
+
+.INPUTS
+None
+
+.OUTPUTS
+System.Object
+
+.EXAMPLE
+Get-ConfigParm
+
+.EXAMPLE
+Get-ConfigParm -Key 'Common\Mail\SMTPHost'
+#>
 function Get-ConfigParm {
     [CmdletBinding()]
     Param (

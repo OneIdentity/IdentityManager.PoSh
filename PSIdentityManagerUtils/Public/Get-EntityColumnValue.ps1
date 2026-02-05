@@ -1,3 +1,25 @@
+<#!
+.SYNOPSIS
+Gets a column value from an entity.
+
+.DESCRIPTION
+Returns the value of the specified column on the given entity.
+
+.PARAMETER Entity
+The entity to get the value from.
+
+.PARAMETER Column
+The column to get.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+System.Object
+
+.EXAMPLE
+Get-EntityColumnValue -Entity $entity -Column 'UID_Person'
+#>
 function Get-EntityColumnValue {
   [CmdletBinding()]
   Param (

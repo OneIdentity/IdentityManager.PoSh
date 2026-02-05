@@ -13,8 +13,8 @@ Describe 'Scripting' {
     Context 'Running scripts' {
 
         It 'Will fail on non-existing script' {          
-            { Invoke-IdentityManagerScript -Name 'FooBar' } | Should -Throw '*Script block FooBar not found.*'
-        }      
+            { Invoke-IdentityManagerScript -Name 'FooBar' } | Should -Throw "*The script 'FooBar' could not be found.*"
+        }
 
         It 'Can run a script and fetch return value' {
             $params = @('Common')
@@ -23,6 +23,18 @@ Describe 'Scripting' {
 
             $pV = Get-Entity -Type 'DialogConfigparm' -Filter "Fullpath = '$($params[0])'"
             $configParmValue | Should -BeExactly $pV.Value
+        }
+
+        It 'Can run a script with multiple parameters' {
+            $params = @('foo=bar;hello=world', 'foo', 'baz', $false)
+            $r = Invoke-IdentityManagerScript -Name 'DPR_Append2ConnectionString' -Parameters $params
+            "foo=baz;hello=world" | Should -BeExactly $r
+        }
+
+        It 'Can run a script with parameter of type ParamArray' {
+            $params = @('foo', 'bar', 'baz')
+            $r = Invoke-IdentityManagerScript -Name 'VID_PathCombine' -Parameters $params
+            "foo$([System.IO.Path]::DirectorySeparatorChar)bar$([System.IO.Path]::DirectorySeparatorChar)baz" | Should -BeExactly $r
         }
 
         It 'Can handle errors' {

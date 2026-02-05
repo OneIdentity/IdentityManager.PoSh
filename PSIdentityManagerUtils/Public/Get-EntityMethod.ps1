@@ -1,4 +1,33 @@
-﻿function Get-EntityMethod() {
+﻿<#!
+.SYNOPSIS
+Gets available methods for an entity.
+
+.DESCRIPTION
+Loads an entity by identity (or uses the provided entity) and returns its object
+and customizer methods.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Entity
+Entity to interact with.
+
+.PARAMETER Type
+The table name of the object.
+
+.PARAMETER Identity
+Load object by UID or XObjectKey.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+System.Object
+
+.EXAMPLE
+Get-EntityMethod -Type 'Person' -Identity $uid
+#>
+function Get-EntityMethod() {
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]
     [ValidateScript({

@@ -1,3 +1,32 @@
+<#!
+.SYNOPSIS
+Creates a new entity.
+
+.DESCRIPTION
+Creates a new entity in the specified table, applies property values, and saves
+it unless `Unsaved` is specified.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Type
+The table name of the object to create.
+
+.PARAMETER Properties
+Hashtable of column values to set.
+
+.PARAMETER Unsaved
+Do not automatically save the entity.
+
+.INPUTS
+None
+
+.OUTPUTS
+VI.DB.Entities.IEntity
+
+.EXAMPLE
+New-Entity -Type 'Person' -Properties @{ Firstname = 'Alex'; Lastname = 'Miller' }
+#>
 function New-Entity {
   [CmdletBinding()]
   Param (

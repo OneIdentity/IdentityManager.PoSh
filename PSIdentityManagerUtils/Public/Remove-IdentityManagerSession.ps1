@@ -1,3 +1,25 @@
+<#!
+.SYNOPSIS
+Removes an Identity Manager session.
+
+.DESCRIPTION
+Disposes the session and its factory and removes it from the global session store.
+
+.PARAMETER Prefix
+Prefix specified while creating the connection.
+
+.PARAMETER Session
+Session to remove.
+
+.INPUTS
+VI.DB.Entities.ISession
+
+.OUTPUTS
+None
+
+.EXAMPLE
+Remove-IdentityManagerSession -Prefix 'Prod'
+#>
 function Remove-IdentityManagerSession {
   [CmdletBinding()]
   Param (

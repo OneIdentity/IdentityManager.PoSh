@@ -1,3 +1,23 @@
+<#!
+.SYNOPSIS
+Resolves the session to use.
+
+.DESCRIPTION
+Returns the provided session, or resolves the current session from the global
+session store when exactly one session exists.
+
+.PARAMETER Session
+The session to use.
+
+.INPUTS
+VI.DB.Entities.ISession
+
+.OUTPUTS
+VI.DB.Entities.ISession
+
+.EXAMPLE
+Get-IdentityManagerSessionToUse -Session $session
+#>
 function Get-IdentityManagerSessionToUse {
   [CmdletBinding()]
   Param (

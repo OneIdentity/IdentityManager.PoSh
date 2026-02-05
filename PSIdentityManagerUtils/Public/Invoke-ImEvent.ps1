@@ -1,4 +1,39 @@
-﻿function Invoke-ImEvent() {
+﻿<#!
+.SYNOPSIS
+Generates an Identity Manager event for an entity.
+
+.DESCRIPTION
+Loads an entity and generates the specified event with optional parameters, then
+commits the unit of work.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Entity
+Entity to interact with.
+
+.PARAMETER Type
+The table name of the object.
+
+.PARAMETER Identity
+Load object by UID or XObjectKey.
+
+.PARAMETER EventName
+The event name to generate.
+
+.PARAMETER EventParameters
+Key/value pairs for the event parameters.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+VI.DB.Entities.IEntity
+
+.EXAMPLE
+Invoke-ImEvent -Type 'Person' -Identity $uid -EventName 'Create'
+#>
+function Invoke-ImEvent() {
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]
     [ValidateScript({

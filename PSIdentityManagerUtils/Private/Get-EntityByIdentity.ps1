@@ -1,3 +1,32 @@
+<#!
+.SYNOPSIS
+Loads an entity by identity.
+
+.DESCRIPTION
+Loads an entity by UID or XObjectKey (or uses the provided entity) and extends it
+with dynamic members.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Entity
+Internal use. An entity instance to use directly.
+
+.PARAMETER Type
+The table name of the object to load.
+
+.PARAMETER Identity
+Load object by UID or XObjectKey.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+VI.DB.Entities.IEntity
+
+.EXAMPLE
+Get-EntityByIdentity -Session $session -Type 'Person' -Identity $uid
+#>
 function Get-EntityByIdentity {
   [CmdletBinding()]
   Param (

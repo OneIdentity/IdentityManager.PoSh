@@ -1,3 +1,32 @@
+<#!
+.SYNOPSIS
+Sets a column value on an entity.
+
+.DESCRIPTION
+Updates a column value for the entity, resolving UID or dynamic FK values when
+the provided value is another entity.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Entity
+The entity to modify.
+
+.PARAMETER Column
+The column to update.
+
+.PARAMETER Value
+The value to set for the column.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+None
+
+.EXAMPLE
+Set-EntityColumnValue -Entity $entity -Column 'UID_Department' -Value $dept
+#>
 function Set-EntityColumnValue {
   [CmdletBinding()]
   Param (

@@ -1,3 +1,32 @@
+<#!
+.SYNOPSIS
+Tests whether an entity exists.
+
+.DESCRIPTION
+Checks whether the specified entity exists by UID or XObjectKey, or verifies that
+the provided entity is loaded.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Entity
+Entity to test for existence.
+
+.PARAMETER Type
+The table name of the test object.
+
+.PARAMETER Identity
+Test object by UID or XObjectKey.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+System.Boolean
+
+.EXAMPLE
+Test-Entity -Type 'Person' -Identity $uid
+#>
 function Test-Entity {
     [OutputType([bool])]
     [CmdletBinding()]

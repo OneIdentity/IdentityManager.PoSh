@@ -1,3 +1,48 @@
+<#!
+.SYNOPSIS
+Creates a new Identity Manager session.
+
+.DESCRIPTION
+Creates a session using the provided connection and authentication strings,
+optionally loads product files, enables trace logging, and generates typed wrapper
+functions.
+
+.PARAMETER ConnectionString
+Connection string to an Identity Manager database or application server.
+
+.PARAMETER AuthenticationString
+Authentication string to use.
+
+.PARAMETER FactoryName
+The connection factory to use. This parameter is obsolete.
+
+.PARAMETER ProductFilePath
+The base path to load the Identity Manager product files from.
+
+.PARAMETER Prefix
+Cmdlet prefix to use for handling multiple connections.
+
+.PARAMETER ModulesToSkip
+Modules to skip for function generation.
+
+.PARAMETER ModulesToAdd
+Modules to add for function generation.
+
+.PARAMETER SkipFunctionGeneration
+Do not create typed wrapper functions.
+
+.PARAMETER TraceMode
+Enable Identity Manager trace logging.
+
+.INPUTS
+None
+
+.OUTPUTS
+VI.DB.Entities.ISession
+
+.EXAMPLE
+New-IdentityManagerSession -ConnectionString $cs -AuthenticationString $auth
+#>
 function New-IdentityManagerSession {
   [CmdletBinding()]
   Param (
