@@ -1,4 +1,29 @@
-﻿function Add-UnitOfWorkEntity {
+﻿<#!
+.SYNOPSIS
+Adds an entity to a unit of work.
+
+.DESCRIPTION
+Calls PutAsync on the provided unit of work to add or update the specified entity.
+
+.PARAMETER UnitOfWork
+The unit of work to use for the operation.
+
+.PARAMETER Entity
+The entity to add to the unit of work. Accepts input from the pipeline.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+None
+
+.EXAMPLE
+Add-UnitOfWorkEntity -UnitOfWork $uow -Entity $entity
+
+.EXAMPLE
+$entity | Add-UnitOfWorkEntity -UnitOfWork $uow
+#>
+function Add-UnitOfWorkEntity {
   [CmdletBinding()]
   Param (
     [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The unit of work to use for set operation')]

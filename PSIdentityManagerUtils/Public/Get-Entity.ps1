@@ -1,3 +1,39 @@
+<#!
+.SYNOPSIS
+Gets Identity Manager entities.
+
+.DESCRIPTION
+Loads entities by identity (UID or XObjectKey) or queries a collection from a table
+using an optional filter. Returned entities are reloaded and extended with dynamic
+members.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Type
+The table name of the object to load.
+
+.PARAMETER Identity
+Load object by UID or XObjectKey.
+
+.PARAMETER ResultSize
+Maximum number of results returned when querying collections.
+
+.PARAMETER Filter
+SQL where clause to filter the result.
+
+.INPUTS
+None
+
+.OUTPUTS
+VI.DB.Entities.IEntity
+
+.EXAMPLE
+Get-Entity -Type 'Person' -ResultSize 100
+
+.EXAMPLE
+Get-Entity -Identity $uid -Type 'Person'
+#>
 function Get-Entity {
   [CmdletBinding()]
   Param (

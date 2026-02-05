@@ -1,4 +1,30 @@
-﻿function Invoke-IdentityManagerScript {
+﻿<#!
+.SYNOPSIS
+Invokes an Identity Manager script.
+
+.DESCRIPTION
+Runs a script by name within the Identity Manager scripting environment, passing
+optional parameters and returning the result.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Name
+The name of the script.
+
+.PARAMETER Parameters
+Script parameters.
+
+.INPUTS
+None
+
+.OUTPUTS
+System.Object
+
+.EXAMPLE
+Invoke-IdentityManagerScript -Name 'QBM_Person_SetAccountName' -Parameters @($uid)
+#>
+function Invoke-IdentityManagerScript {
   [CmdletBinding()]
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]
@@ -35,6 +61,34 @@
       $scriptEnv = [VI.DB.Entities.SessionExtensions]::Scripts($sessionToUse)
       $scriptClass = $scriptEnv['scripts']
       $scriptRunner = New-Object 'VI.DB.Scripting.ScriptRunner' -ArgumentList @($scriptClass, $sessionToUse)
+
+      $method = $scriptClass[$Name]
+
+      if ( -not $method) {
+        throw "The script '$Name' could not be found."
+      }
+
+      $methodParameters = $method.GetParameters()
+      Write-Debug "The script $Name has $(($methodParameters).Length) parameter(s). The provided parameter array has a length of $($Parameters.Length)."
+
+      # Check if the method has a ParamArray parameter and wrap parameters accordingly
+      if ($methodParameters.Length -gt 0 -and $methodParameters[-1].IsDefined([System.ParamArrayAttribute], $false)) {
+        Write-Debug "The script $Name has a ParamArray parameter. Wrapping parameters."
+        # Get the element type of the ParamArray parameter
+        $paramArrayType = $methodParameters[-1].ParameterType.GetElementType()
+        Write-Debug "ParamArray element type: $($paramArrayType.FullName)"
+
+        # Convert the parameters to a strongly-typed array
+        $typedArray = [Array]::CreateInstance($paramArrayType, $Parameters.Length)
+        for ($i = 0; $i -lt $Parameters.Length; $i++) {
+          $typedArray[$i] = $Parameters[$i]
+        }
+
+        # Create a single-element array containing the typed parameters array
+        $wrappedParams = [object[]]::new(1)
+        $wrappedParams[0] = $typedArray
+        $Parameters = $wrappedParams
+      }
 
       # register events
       $registeredEvents = New-Object System.Collections.ArrayList

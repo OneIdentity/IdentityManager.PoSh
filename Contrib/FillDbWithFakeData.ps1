@@ -38,56 +38,42 @@ $NumberOfItShopProducts = 1000
 $OrgStructureDepth = 3
 $NumberOfCustomTargetSystems = 5
 
-function Resolve-Exception {
-  [CmdletBinding()]
-  Param (
-      [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The exception object to handle')]
-      [ValidateNotNull()]
-      [Object] $ExceptionObject,
-      [parameter(Mandatory = $false, HelpMessage = 'Toogle stacktrace output')]
-      [switch] $HideStackTrace = $false,
-      [parameter(Mandatory = $false, HelpMessage = 'The error action to use')]
-      [String] $CustomErrorAction = 'Stop'
-  )
+trap {
+    $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-  Begin {
-  }
+    Write-Host ''
+    Write-Host "[$ts] ERROR: $_"
+    Write-Host ''
 
-  Process
-  {
-      $sst = ''
-      $st = ''
-      $e = $ExceptionObject.Exception
-      if ($null -ne (Get-Member -InputObject $ExceptionObject -Name 'ScriptStackTrace')) {
-          $sst = $ExceptionObject.ScriptStackTrace
-      }
-      if ($null -ne (Get-Member -InputObject $ExceptionObject -Name 'StackTrace')) {
-          $st = $ExceptionObject.StackTrace
-      }
+    # Stack trace
+    if ($_.ScriptStackTrace) {
+        Write-Host "[$ts] --- Stack Trace ---"
+        ($_.ScriptStackTrace -split '\r?\n') | Where-Object { $_.Trim() } | ForEach-Object {
+            Write-Host "[$ts] $_"
+        }
+        Write-Host ''
+    }
 
-      $msg = $e.Message
-      while ($e.InnerException) {
-          $e = $e.InnerException
+    # Main exception
+    Write-Host "[$ts] Exception Type: $($_.Exception.GetType().FullName)"
+    Write-Host "[$ts] Exception Message: $($_.Exception.Message)"
 
-          $msg += $([Environment]::NewLine) + $e.Message
-          if ($null -ne (Get-Member -InputObject $e -Name 'ScriptStackTrace')) {
-              $sst += $([Environment]::NewLine) + $e.ScriptStackTrace + $([Environment]::NewLine) + "---"
-          }
+    # Walk inner exceptions
+    $inner = $_.Exception.InnerException
+    $level = 1
+    while ($inner) {
+        Write-Host ''
+        Write-Host "[$ts] Inner Exception [$level]:"
+        Write-Host "[$ts]   Type: $($inner.GetType().FullName)"
+        Write-Host "[$ts]   Message: $($inner.Message)"
 
-          if ($null -ne (Get-Member -InputObject $e -Name 'StackTrace')) {
-              $st += $([Environment]::NewLine) + $e.StackTrace + $([Environment]::NewLine) + "---"
-          }
-      }
+        $inner = $inner.InnerException
+        $level++
+    }
 
-      if (-not ($HideStackTrace)) {
-          $msg += $([Environment]::NewLine) + '---[ScriptStackTrace]---' + $([Environment]::NewLine) + $sst + $([Environment]::NewLine) + '---[StackTrace]---' + $([Environment]::NewLine) + $st
-      }
+    Write-Host ''
 
-      Write-Error -Message $msg -ErrorAction $CustomErrorAction
-  }
-
-  End {
-  }
+    Exit 1
 }
 
 $Session = New-IdentityManagerSession `
@@ -111,24 +97,16 @@ if ($PersonCount -gt 0) {
 
 # For easy Fakedata we use Bogus - get it from https://github.com/bchavez/Bogus
 $FileToLoad = Join-Path "$PSScriptRoot" $(if (7 -eq $PSVersionTable.PSVersion.Major) { $(Join-Path 'net6.0' -ChildPath 'Bogus.dll') } else { $(Join-Path 'net40' -ChildPath 'Bogus.dll') })
-try {
-    [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
-    $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
-    Write-Debug "[+] File ${FileToLoad} loaded with version ${clientVersion}"
-} catch {
-    Resolve-Exception -ExceptionObject $PSitem
-}
+[System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
+$clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
+Write-Debug "[+] File ${FileToLoad} loaded with version ${clientVersion}"
 
 # For easy QR Codes we use https://www.nuget.org/packages/QRCoder
 # https://github.com/codebude/QRCoder/
 $FileToLoad = Join-Path "$PSScriptRoot" $(if (7 -eq $PSVersionTable.PSVersion.Major) { $(Join-Path 'net6.0' -ChildPath 'QRCoder.dll') } else { $(Join-Path 'net40' -ChildPath 'QRCoder.dll') })
-try {
-    [System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
-    $clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
-    Write-Debug "[+] File ${FileToLoad} loaded with version ${clientVersion}"
-} catch {
-    Resolve-Exception -ExceptionObject $PSitem
-}
+[System.Reflection.Assembly]::LoadFrom($FileToLoad) | Out-Null
+$clientVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FileToLoad).ProductVersion
+Write-Debug "[+] File ${FileToLoad} loaded with version ${clientVersion}"
 
 $FakeData = [PSCustomObject]@{
   Identities = @()
@@ -793,12 +771,8 @@ function New-CustomTargetSystem {
       [int] $Quantity
   )
 
-  try {
-    # Load VI.TSUtils.dll as we need if to create a custom target system
-    [System.Reflection.Assembly]::LoadFrom([io.path]::combine($ProductFilePath, 'VI.TSUtils.dll')) | Out-Null
-  } catch {
-    Resolve-Exception -ExceptionObject $PSitem
-  }
+  # Load VI.TSUtils.dll as we need if to create a custom target system
+  [System.Reflection.Assembly]::LoadFrom([io.path]::combine($ProductFilePath, 'VI.TSUtils.dll')) | Out-Null
 
   for ($i = 1; $i -le $Quantity; $i++) {
     # Create custom target system type and save it immediately
@@ -835,7 +809,6 @@ function New-CustomTargetSystem {
       }
 
     # Create IT Data Mapping
-
     $dialogColumns = @{
       IsGroupAccount_UNSGroupB = 'TSB-B871B45D47FC7D8C30747CACC4DC00FF';
       IsGroupAccount_UNSGroupB1 = 'TSB-4FCB4A495D7E2B35E674FE66E28CA44B';
@@ -843,7 +816,7 @@ function New-CustomTargetSystem {
       IsGroupAccount_UNSGroupB3 = 'TSB-A817E34959FD1842D1DF080E4ED80C1D'
     }
 
-    ForEach($k in $dialogColumns.Keys) {
+    ForEach ($k in $dialogColumns.Keys) {
       New-Entity -Type 'TSBITDataMapping' `
       -Properties @{
         UID_TSBAccountDef = $TAD.UID_TSBAccountDef
@@ -1166,41 +1139,38 @@ while ($FakeData.Identities[0].Subordinates.Count -lt $rootMaxDirectReports -and
 
 $j = $remainingPeople.Count
 
-try {
-    foreach ($person in $remainingPeople) {
-        $assigned = $false
-        while (-not $assigned) {
-            $meanSubordinates = [Math]::Ceiling($numberOfIdentities * 0.1)
-            $stdDevSubordinates = [Math]::Ceiling($numberOfIdentities * 0.03)
-            $desiredSubordinates = GetGaussianRandom -mean $meanSubordinates -stdDev $stdDevSubordinates -min $minSubordinates -max $maxSubordinates
+foreach ($person in $remainingPeople) {
+    $assigned = $false
+    while (-not $assigned) {
+        $meanSubordinates = [Math]::Ceiling($numberOfIdentities * 0.1)
+        $stdDevSubordinates = [Math]::Ceiling($numberOfIdentities * 0.03)
+        $desiredSubordinates = GetGaussianRandom -mean $meanSubordinates -stdDev $stdDevSubordinates -min $minSubordinates -max $maxSubordinates
 
-            $potentialSupervisors = $availableSupervisors | Where-Object {
-                $_.UID_Person -ne $FakeData.Identities[0].UID_Person -and $_.Subordinates.Count -lt $maxSubordinates
-            } | Where-Object { !(HasCircularReference -subordinate $person -supervisor $_) }
+        $potentialSupervisors = $availableSupervisors | Where-Object {
+            $_.UID_Person -ne $FakeData.Identities[0].UID_Person -and $_.Subordinates.Count -lt $maxSubordinates
+        } | Where-Object { !(HasCircularReference -subordinate $person -supervisor $_) }
 
-            if (-Not ('Count' -In $potentialSupervisors.PSobject.Properties.Name)) {
-                $newSupervisor = $availableSupervisors |Get-Random -SetSeed $($Seed * $j + $j)
-                $newSupervisor.Subordinates += $person
-                $person.UID_PersonHead = $newSupervisor.UID_Person
-                $availableSupervisors += $person
-                $assigned = $true
-            } else {
-                $supervisor = $potentialSupervisors |Get-Random -SetSeed $($Seed * $j)
-                $supervisor.Subordinates += $person
-                $person.UID_PersonHead = $supervisor.UID_Person
-                $assigned = $true
+        if (-Not ('Count' -In $potentialSupervisors.PSobject.Properties.Name)) {
+            $newSupervisor = $availableSupervisors |Get-Random -SetSeed $($Seed * $j + $j)
+            $newSupervisor.Subordinates += $person
+            $person.UID_PersonHead = $newSupervisor.UID_Person
+            $availableSupervisors += $person
+            $assigned = $true
+        } else {
+            $supervisor = $potentialSupervisors |Get-Random -SetSeed $($Seed * $j)
+            $supervisor.Subordinates += $person
+            $person.UID_PersonHead = $supervisor.UID_Person
+            $assigned = $true
 
-                if ($supervisor.Subordinates.Count -ge $desiredSubordinates) {
-                    $availableSupervisors = $availableSupervisors -ne $supervisor
-                }
+            if ($supervisor.Subordinates.Count -ge $desiredSubordinates) {
+                $availableSupervisors = $availableSupervisors -ne $supervisor
             }
         }
-
-        $j--
     }
-} catch {
-    Resolve-Exception -ExceptionObject $PSitem
+
+    $j--
 }
+
 # Add managers to identities end
 
 $et = New-TimeSpan $st $(get-date)

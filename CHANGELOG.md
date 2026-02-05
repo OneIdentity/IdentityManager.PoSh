@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.0.33] - 2026-02-05
+
+### Fixes
+
+- Fix issue with running scripts of ParamArray parameter type
+
+### Testing
+
+- Add more test cases for Invoke-IdentityManagerScript
+
+### Miscellaneous
+
+- Add comments to functions
+
 ## [0.0.32] - 2025-12-18
 
 ### Miscellaneous

@@ -578,7 +578,7 @@ Contributions are what make the open source community such an amazing place to b
 
 It may happen that errors occur. In this case it's possible to activate debug messages.
 To get the output from Write-Debug messages, please activate debug messages globally with `$global:DebugPreference = "Continue"`
-The cmdlet New-IdentityManagerSession also has the 'TraceMode' switch which could be added as well.
+The cmdlet `New-IdentityManagerSession` also has the `-TraceMode` switch which could be added as well.
 
 If you open a GitHub issue please add any Debug messages as well.
 

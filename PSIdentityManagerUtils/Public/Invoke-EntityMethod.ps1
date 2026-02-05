@@ -1,4 +1,42 @@
-﻿function Invoke-EntityMethod {
+﻿<#!
+.SYNOPSIS
+Invokes an entity method.
+
+.DESCRIPTION
+Loads an entity and invokes the specified method with optional parameters. By
+default the entity is saved after method invocation.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Entity
+Entity to interact with.
+
+.PARAMETER Type
+The table name of the object.
+
+.PARAMETER Identity
+Load object by UID or XObjectKey.
+
+.PARAMETER MethodName
+The name of the method to invoke.
+
+.PARAMETER Parameters
+Method parameters.
+
+.PARAMETER Unsaved
+Do not automatically save the entity after invocation.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+VI.DB.Entities.IEntity
+
+.EXAMPLE
+Invoke-EntityMethod -Type 'Person' -Identity $uid -MethodName 'SetActive'
+#>
+function Invoke-EntityMethod {
   [CmdletBinding()]
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]

@@ -1,3 +1,38 @@
+<#!
+.SYNOPSIS
+Removes an entity.
+
+.DESCRIPTION
+Marks an entity for deletion (optionally without delete delay) and saves it unless
+`Unsaved` is specified.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Entity
+Entity to remove.
+
+.PARAMETER Type
+The table name of the object to modify.
+
+.PARAMETER Identity
+Load object by UID or XObjectKey.
+
+.PARAMETER Unsaved
+Do not automatically save the entity.
+
+.PARAMETER IgnoreDeleteDelay
+Delete the entity without delete delay.
+
+.INPUTS
+VI.DB.Entities.IEntity
+
+.OUTPUTS
+VI.DB.Entities.IEntity
+
+.EXAMPLE
+Remove-Entity -Type 'Person' -Identity $uid
+#>
 function Remove-Entity {
   [CmdletBinding()]
   Param (

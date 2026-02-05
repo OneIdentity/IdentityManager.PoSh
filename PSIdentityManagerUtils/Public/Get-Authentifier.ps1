@@ -1,3 +1,32 @@
+<#!
+.SYNOPSIS
+Gets available authentifiers for an Identity Manager product.
+
+.DESCRIPTION
+Connects to the Identity Manager database or application server using the provided
+connection string and returns available UI authentifiers for the specified product.
+
+.PARAMETER ConnectionString
+Connection string to an Identity Manager database or application server.
+
+.PARAMETER FactoryName
+The connection factory to use. This parameter is obsolete.
+
+.PARAMETER ProductFilePath
+The base path to load the Identity Manager product files from.
+
+.PARAMETER Product
+The product to query for authentication methods.
+
+.INPUTS
+System.String
+
+.OUTPUTS
+System.Object
+
+.EXAMPLE
+Get-Authentifier -ConnectionString $cs -Product 'Manager'
+#>
 function Get-Authentifier {
   [CmdletBinding()]
   Param (

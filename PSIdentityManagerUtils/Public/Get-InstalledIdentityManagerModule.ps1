@@ -1,3 +1,22 @@
+<#!
+.SYNOPSIS
+Gets installed Identity Manager modules.
+
+.DESCRIPTION
+Returns the list of installed modules from the module graph.
+
+.PARAMETER Session
+The session to use.
+
+.INPUTS
+None
+
+.OUTPUTS
+System.String[]
+
+.EXAMPLE
+Get-InstalledIdentityManagerModule
+#>
 function Get-InstalledIdentityManagerModule {
     [CmdletBinding()]
     [OutputType([String[]])]

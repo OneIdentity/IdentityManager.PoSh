@@ -1,8 +1,20 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-#$DebugPreference = 'SilentlyContinue' # Valid values are 'SilentlyContinue' -> Don't show any debug messages; Continue -> Show debug messages.
 # Output of debug messages can also be handled by setting '$global:DebugPreference = "Continue"'
 
+<#!
+.SYNOPSIS
+Writes debug information about the host system.
+
+.DESCRIPTION
+Outputs the OS platform and PowerShell version via Write-Debug.
+
+.OUTPUTS
+None
+
+.EXAMPLE
+Get-SystemInfo
+#>
 function Get-SystemInfo {
   Begin {
   }
@@ -20,13 +32,43 @@ function Get-SystemInfo {
 
 Get-SystemInfo
 
+<#!
+.SYNOPSIS
+Formats and rethrows exceptions as terminating errors.
+
+.DESCRIPTION
+Builds a combined error message from nested exceptions and optional stack traces,
+then writes the error with the specified error action.
+
+.PARAMETER ExceptionObject
+The exception object to handle.
+
+.PARAMETER HideStackTrace
+Suppresses inclusion of script and CLR stack traces in the error message.
+
+.PARAMETER CustomErrorAction
+The error action to use when writing the error.
+
+.INPUTS
+System.Object
+
+.OUTPUTS
+None
+
+.EXAMPLE
+try {
+  # code
+} catch {
+  Resolve-Exception -ExceptionObject $PSItem
+}
+#>
 function Resolve-Exception {
   [CmdletBinding()]
   Param (
       [parameter(Mandatory = $true, Position = 0, HelpMessage = 'The exception object to handle')]
       [ValidateNotNull()]
       [Object] $ExceptionObject,
-      [parameter(Mandatory = $false, HelpMessage = 'Toogle stacktrace output')]
+      [parameter(Mandatory = $false, HelpMessage = 'Toggle stacktrace output')]
       [switch] $HideStackTrace = $false,
       [parameter(Mandatory = $false, HelpMessage = 'The error action to use')]
       [String] $CustomErrorAction = 'Stop'
@@ -71,6 +113,26 @@ function Resolve-Exception {
   }
 }
 
+<#!
+.SYNOPSIS
+Returns the factory type name for a connection string.
+
+.DESCRIPTION
+Detects the connection string type and returns the matching Identity Manager
+factory class name.
+
+.PARAMETER ConnectionString
+Connection string to analyze.
+
+.INPUTS
+System.String
+
+.OUTPUTS
+System.String
+
+.EXAMPLE
+Get-SqlFactoryFromConnectionString -ConnectionString $cs
+#>
 function Get-SqlFactoryFromConnectionString {
   [CmdletBinding()]
   [OutputType([string])]
@@ -89,6 +151,29 @@ function Get-SqlFactoryFromConnectionString {
   }
 }
 
+<#!
+.SYNOPSIS
+Loads an assembly file into the current AppDomain.
+
+.DESCRIPTION
+Validates the base path and file existence, then loads the assembly if it is not
+already loaded. Writes debug information and returns the file version info.
+
+.PARAMETER BasePath
+The base path to load files from.
+
+.PARAMETER File
+The file to load into the AppDomain.
+
+.INPUTS
+None
+
+.OUTPUTS
+System.Diagnostics.FileVersionInfo
+
+.EXAMPLE
+Add-FileToAppDomain -BasePath $path -File 'VI.DB.dll'
+#>
 function Add-FileToAppDomain {
   [CmdletBinding()]
   param (
@@ -133,6 +218,33 @@ function Add-FileToAppDomain {
   $clientVersion
 }
 
+<#!
+.SYNOPSIS
+Loads required Identity Manager assemblies.
+
+.DESCRIPTION
+Resolves the Identity Manager installation path, loads core assemblies, enforces
+PowerShell compatibility for product versions, and optionally enables trace mode.
+Returns the resolved base path.
+
+.PARAMETER BasePath
+The base path to load files from.
+
+.PARAMETER TraceMode
+Enables Identity Manager trace logging by loading NLog.
+
+.INPUTS
+None
+
+.OUTPUTS
+System.String
+
+.EXAMPLE
+Add-IdentityManagerProductFile
+
+.EXAMPLE
+Add-IdentityManagerProductFile -BasePath 'C:\Program Files\One Identity\One Identity Manager' -TraceMode
+#>
 function Add-IdentityManagerProductFile {
   [CmdletBinding()]
   param (
@@ -246,6 +358,20 @@ $Global:OnAssemblyResolve = [System.ResolveEventHandler] {
   throw "[!] Unable to resolve $($e.Name)."
 }
 
+<#!
+.SYNOPSIS
+Creates a unique temporary directory.
+
+.DESCRIPTION
+Generates a random directory name in the system temp path and creates it,
+retrying until successful. Returns the full path.
+
+.OUTPUTS
+System.String
+
+.EXAMPLE
+$tempPath = New-TemporaryDirectory
+#>
 function New-TemporaryDirectory {
   $parent = [System.IO.Path]::GetTempPath()
   do {

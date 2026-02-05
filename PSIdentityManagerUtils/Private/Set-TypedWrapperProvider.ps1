@@ -1,4 +1,33 @@
-﻿function Set-TypedWrapperProvider {
+﻿<#!
+.SYNOPSIS
+Generates typed Set-* wrapper functions.
+
+.DESCRIPTION
+Generates global Set-<Table> functions for each active table, optionally filtered
+by modules to include or skip.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Prefix
+Cmdlet prefix to use for handling multiple connections.
+
+.PARAMETER ModulesToSkip
+List of modules to skip for function generation.
+
+.PARAMETER ModulesToAdd
+List of modules to add for function generation.
+
+.INPUTS
+None
+
+.OUTPUTS
+None
+
+.EXAMPLE
+Set-TypedWrapperProvider -Session $session -Prefix 'Prod'
+#>
+function Set-TypedWrapperProvider {
   [CmdletBinding()]
   Param (
     [parameter(Mandatory = $true, HelpMessage = 'The session to use')]

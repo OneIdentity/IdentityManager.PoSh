@@ -1,4 +1,32 @@
-﻿function Get-TableCount() {
+﻿<#!
+.SYNOPSIS
+Gets the row count for a table.
+
+.DESCRIPTION
+Returns the number of rows in a table, optionally filtered by a SQL where clause.
+
+.PARAMETER Session
+The session to use.
+
+.PARAMETER Name
+The table name to query.
+
+.PARAMETER Filter
+SQL where clause to filter the result.
+
+.INPUTS
+None
+
+.OUTPUTS
+System.Int32
+
+.EXAMPLE
+Get-TableCount -Name 'Person'
+
+.EXAMPLE
+Get-TableCount -Name 'Person' -Filter "IsActive = 1"
+#>
+function Get-TableCount() {
   Param (
     [parameter(Mandatory = $false, HelpMessage = 'The session to use')]
     [ValidateScript({
